@@ -1,9 +1,15 @@
 {
     "name": "charm/sort",
-    "description": "Stable, fast sorting for PHP with a small object API: a Sorter configured once, with key functions, per-column order and locale-aware collation.",
+    "description": "Stable, fast sorting for PHP with a small object API: a Sorter configured once, with a comparison closure or a derived sort key, and descending order.",
     "type": "library",
     "license": "MIT",
-    "keywords": ["sort", "sorting", "stable sort", "collation", "multisort"],
+    "keywords": [
+        "sort",
+        "sorting",
+        "stable sort",
+        "usort",
+        "ksort"
+    ],
     "authors": [
         {
             "name": "Frode Børli",
@@ -29,5 +35,18 @@
             "Charm\\Sort\\Tests\\": "tests/"
         }
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "stable",
+    "scripts": {
+        "test": "phpunit",
+        "generate": "bin/generate",
+        "bench": [
+            "Composer\\Config::disableProcessTimeout",
+            "bench/run.sh"
+        ]
+    },
+    "scripts-descriptions": {
+        "test": "Run the test suite",
+        "generate": "Regenerate src/Loops.php from bin/*.tpl",
+        "bench": "Benchmark against native sort(), with and without the JIT"
+    }
 }

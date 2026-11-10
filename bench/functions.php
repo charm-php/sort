@@ -49,7 +49,8 @@ function nativeSort(array $a): array
 
 function sorterSort(array $a): array
 {
-    static $sorter = new Sorter();
+    static $sorter = null;
+    $sorter ??= new Sorter();
     return $sorter->sort($a);
 }
 
@@ -67,7 +68,8 @@ function nativeKsort(array $a): array
 
 function sorterSortKeys(array $a): array
 {
-    static $sorter = new Sorter();
+    static $sorter = null;
+    $sorter ??= new Sorter();
     return $sorter->sortKeys($a);
 }
 
@@ -81,7 +83,8 @@ function nativeUsort(array $a): array
 
 function sorterCompare(array $a): array
 {
-    static $sorter = new Sorter(static fn($x, $y) => $x <=> $y);
+    static $sorter = null;
+    $sorter ??= new Sorter(static fn($x, $y) => $x <=> $y);
     return $sorter->sort($a);
 }
 
@@ -93,7 +96,8 @@ function nativeUasort(array $a): array
 
 function sorterCompareKeep(array $a): array
 {
-    static $sorter = new Sorter(static fn($x, $y) => $x <=> $y, preserveKeys: true);
+    static $sorter = null;
+    $sorter ??= new Sorter(static fn($x, $y) => $x <=> $y, preserveKeys: true);
     return $sorter->sort($a);
 }
 
@@ -105,7 +109,8 @@ function nativeUksort(array $a): array
 
 function sorterCompareKeys(array $a): array
 {
-    static $sorter = new Sorter(static fn($x, $y) => $x <=> $y);
+    static $sorter = null;
+    $sorter ??= new Sorter(static fn($x, $y) => $x <=> $y);
     return $sorter->sortKeys($a);
 }
 
