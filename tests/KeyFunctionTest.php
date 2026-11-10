@@ -17,7 +17,7 @@ final class KeyFunctionTest extends TestCase
             foreach ([0, 1, 2, 16, 17, 100, 5000] as $n) {
                 foreach ([false, true] as $preserve) {
                     $calls = 0;
-                    $sorter = new Sorter(Order::Descending, $comparison, key: function ($v) use (&$calls) {
+                    $sorter = new Sorter($comparison, Order::Descending, key: function ($v) use (&$calls) {
                         ++$calls;
                         return $v % 17;
                     }, preserveKeys: $preserve);
@@ -77,7 +77,7 @@ final class KeyFunctionTest extends TestCase
                     usort($expected, fn($x, $y) => $order === Order::Ascending
                         ? self::lexicographic($x['key'], $y['key'])
                         : self::lexicographic($y['key'], $x['key']));
-                    $sorted = (new Sorter($order, key: fn($r) => $r['key']))->sort($rows);
+                    $sorted = (new Sorter(order: $order, key: fn($r) => $r['key']))->sort($rows);
                     $this->assertSame($expected, $sorted, "{$order->name} n=$n seed=$seed");
                 }
             }
@@ -87,9 +87,9 @@ final class KeyFunctionTest extends TestCase
     public function testArrayKeysWithStringsAndComparison(): void
     {
         $rows = [['b', '10'], ['a', '9'], ['b', '9'], ['a', '10']];
-        $natural = (new Sorter(comparison: Comparison::Natural, key: fn($r) => $r))->sort($rows);
+        $natural = (new Sorter(compare: Comparison::Natural, key: fn($r) => $r))->sort($rows);
         $this->assertSame([['a', '9'], ['a', '10'], ['b', '9'], ['b', '10']], $natural);
-        $binary = (new Sorter(comparison: Comparison::Binary, key: fn($r) => $r))->sort($rows);
+        $binary = (new Sorter(compare: Comparison::Binary, key: fn($r) => $r))->sort($rows);
         $this->assertSame([['a', '10'], ['a', '9'], ['b', '10'], ['b', '9']], $binary);
     }
 

@@ -25,7 +25,7 @@
         // stacks) costs more than it saves here.
         if ($n <= 16) {
             if ($perm) {
-                $ix = range(0, $n - 1);
+                $ix = \range(0, $n - 1);
                 for ($i = 1; $i < $n; ++$i) {
                     $v = $a[$i];
                     $vi = $ix[$i];
@@ -67,22 +67,22 @@
         }
         if ($i === $n) {
             $arr = $a;
-            return $perm ? range(0, $n - 1) : [];
+            return $perm ? \range(0, $n - 1) : [];
         }
         if ($i === 1) {
             while ($i < $n && @after($a[$i - 1], $a[$i])) {
                 ++$i;
             }
             if ($i === $n) {
-                $arr = array_reverse($a);
-                return $perm ? range($n - 1, 0) : [];
+                $arr = \array_reverse($a);
+                return $perm ? \range($n - 1, 0) : [];
             }
         }
 
         // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
-        $ix = range(0, $n - 1);
+        $ix = \range(0, $n - 1);
 
         // Local (not static) partition stacks: a comparison can run user code (__toString()),
         // which could call this function again. Depth stays below log2(n) + 1.

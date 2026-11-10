@@ -30,10 +30,10 @@
         }
         if ($i === $n) {
             $arr = $a;
-            return range(0, $n - 1);
+            return \range(0, $n - 1);
         }
 
-        $ax = range(0, $n - 1);
+        $ax = \range(0, $n - 1);
 
         // Insertion sort runs of 8 in place.
         for ($start = 0; $start < $n; $start += 8) {

@@ -56,7 +56,7 @@ final class Loops
         // stacks) costs more than it saves here.
         if ($n <= 16) {
             if ($perm) {
-                $ix = range(0, $n - 1);
+                $ix = \range(0, $n - 1);
                 for ($i = 1; $i < $n; ++$i) {
                     $v = $a[$i];
                     $vi = $ix[$i];
@@ -98,22 +98,22 @@ final class Loops
         }
         if ($i === $n) {
             $arr = $a;
-            return $perm ? range(0, $n - 1) : [];
+            return $perm ? \range(0, $n - 1) : [];
         }
         if ($i === 1) {
             while ($i < $n && ($a[$i - 1] > $a[$i])) {
                 ++$i;
             }
             if ($i === $n) {
-                $arr = array_reverse($a);
-                return $perm ? range($n - 1, 0) : [];
+                $arr = \array_reverse($a);
+                return $perm ? \range($n - 1, 0) : [];
             }
         }
 
         // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
-        $ix = range(0, $n - 1);
+        $ix = \range(0, $n - 1);
 
         // Local (not static) partition stacks: a comparison can run user code (__toString()),
         // which could call this function again. Depth stays below log2(n) + 1.
@@ -281,17 +281,17 @@ final class Loops
         // stacks) costs more than it saves here.
         if ($n <= 16) {
             if ($perm) {
-                $ix = range(0, $n - 1);
+                $ix = \range(0, $n - 1);
                 for ($i = 1; $i < $n; ++$i) {
                     $v = $a[$i];
                     $vi = $ix[$i];
                     $j = $i - 1;
-                    if ((strcmp($a[$j], $v) > 0)) {
+                    if ((\strcmp($a[$j], $v) > 0)) {
                         do {
                             $a[$j + 1] = $a[$j];
                             $ix[$j + 1] = $ix[$j];
                             --$j;
-                        } while ($j >= 0 && (strcmp($a[$j], $v) > 0));
+                        } while ($j >= 0 && (\strcmp($a[$j], $v) > 0));
                         $a[$j + 1] = $v;
                         $ix[$j + 1] = $vi;
                     }
@@ -302,11 +302,11 @@ final class Loops
             for ($i = 1; $i < $n; ++$i) {
                 $v = $a[$i];
                 $j = $i - 1;
-                if ((strcmp($a[$j], $v) > 0)) {
+                if ((\strcmp($a[$j], $v) > 0)) {
                     do {
                         $a[$j + 1] = $a[$j];
                         --$j;
-                    } while ($j >= 0 && (strcmp($a[$j], $v) > 0));
+                    } while ($j >= 0 && (\strcmp($a[$j], $v) > 0));
                     $a[$j + 1] = $v;
                 }
             }
@@ -318,27 +318,27 @@ final class Loops
         // reversed (no equal elements, so reversing is the stable order). Random input leaves
         // both scans after a few comparisons.
         $i = 1;
-        while ($i < $n && !(strcmp($a[$i - 1], $a[$i]) > 0)) {
+        while ($i < $n && !(\strcmp($a[$i - 1], $a[$i]) > 0)) {
             ++$i;
         }
         if ($i === $n) {
             $arr = $a;
-            return $perm ? range(0, $n - 1) : [];
+            return $perm ? \range(0, $n - 1) : [];
         }
         if ($i === 1) {
-            while ($i < $n && (strcmp($a[$i - 1], $a[$i]) > 0)) {
+            while ($i < $n && (\strcmp($a[$i - 1], $a[$i]) > 0)) {
                 ++$i;
             }
             if ($i === $n) {
-                $arr = array_reverse($a);
-                return $perm ? range($n - 1, 0) : [];
+                $arr = \array_reverse($a);
+                return $perm ? \range($n - 1, 0) : [];
             }
         }
 
         // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
-        $ix = range(0, $n - 1);
+        $ix = \range(0, $n - 1);
 
         // Local (not static) partition stacks: a comparison can run user code (__toString()),
         // which could call this function again. Depth stays below log2(n) + 1.
@@ -358,7 +358,7 @@ final class Loops
                 $ia = $ix[$low];
                 $vb = $a[$mid];
                 $ib = $ix[$mid];
-                if ((($c = strcmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
+                if ((($c = \strcmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
                     $a[$low] = $vb;
                     $ix[$low] = $ib;
                     $a[$mid] = $va;
@@ -368,7 +368,7 @@ final class Loops
                 }
                 $vc = $a[$high];
                 $ic = $ix[$high];
-                if ((($c = strcmp($vb, $vc)) > 0 || ($c === 0 && $ib > $ic))) {
+                if ((($c = \strcmp($vb, $vc)) > 0 || ($c === 0 && $ib > $ic))) {
                     $a[$mid] = $vc;
                     $ix[$mid] = $ic;
                     $a[$high] = $vb;
@@ -377,7 +377,7 @@ final class Loops
                     $ib = $ic;
                     $va = $a[$low];
                     $ia = $ix[$low];
-                    if ((($c = strcmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
+                    if ((($c = \strcmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
                         $a[$low] = $vb;
                         $ix[$low] = $ib;
                         $a[$mid] = $va;
@@ -393,10 +393,10 @@ final class Loops
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
-                    while ((($c = strcmp(($x = $a[$i]), $p)) < 0 || ($c === 0 && $ix[$i] < $pi))) {
+                    while ((($c = \strcmp(($x = $a[$i]), $p)) < 0 || ($c === 0 && $ix[$i] < $pi))) {
                         ++$i;
                     }
-                    while ((($c = strcmp(($y = $a[$j]), $p)) > 0 || ($c === 0 && $ix[$j] > $pi))) {
+                    while ((($c = \strcmp(($y = $a[$j]), $p)) > 0 || ($c === 0 && $ix[$j] > $pi))) {
                         --$j;
                     }
                     if ($i >= $j) {
@@ -445,7 +445,7 @@ final class Loops
         $mi = $ix[0];
         for ($i = 1; $i < 17; ++$i) {
             $v = $a[$i];
-            if ((($c = strcmp($v, $mv)) < 0 || ($c === 0 && $ix[$i] < $mi))) {
+            if ((($c = \strcmp($v, $mv)) < 0 || ($c === 0 && $ix[$i] < $mi))) {
                 $m = $i;
                 $mv = $v;
                 $mi = $ix[$i];
@@ -464,13 +464,13 @@ final class Loops
             $vi = $ix[$i];
             $j = $i - 1;
             $w = $a[$j];
-            if ((($c = strcmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi))) {
+            if ((($c = \strcmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi))) {
                 do {
                     $a[$j + 1] = $w;
                     $ix[$j + 1] = $ix[$j];
                     --$j;
                     $w = $a[$j];
-                } while ((($c = strcmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi)));
+                } while ((($c = \strcmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi)));
                 $a[$j + 1] = $v;
                 $ix[$j + 1] = $vi;
             }
@@ -506,17 +506,17 @@ final class Loops
         // stacks) costs more than it saves here.
         if ($n <= 16) {
             if ($perm) {
-                $ix = range(0, $n - 1);
+                $ix = \range(0, $n - 1);
                 for ($i = 1; $i < $n; ++$i) {
                     $v = $a[$i];
                     $vi = $ix[$i];
                     $j = $i - 1;
-                    if ((strcasecmp($a[$j], $v) > 0)) {
+                    if ((\strcasecmp($a[$j], $v) > 0)) {
                         do {
                             $a[$j + 1] = $a[$j];
                             $ix[$j + 1] = $ix[$j];
                             --$j;
-                        } while ($j >= 0 && (strcasecmp($a[$j], $v) > 0));
+                        } while ($j >= 0 && (\strcasecmp($a[$j], $v) > 0));
                         $a[$j + 1] = $v;
                         $ix[$j + 1] = $vi;
                     }
@@ -527,11 +527,11 @@ final class Loops
             for ($i = 1; $i < $n; ++$i) {
                 $v = $a[$i];
                 $j = $i - 1;
-                if ((strcasecmp($a[$j], $v) > 0)) {
+                if ((\strcasecmp($a[$j], $v) > 0)) {
                     do {
                         $a[$j + 1] = $a[$j];
                         --$j;
-                    } while ($j >= 0 && (strcasecmp($a[$j], $v) > 0));
+                    } while ($j >= 0 && (\strcasecmp($a[$j], $v) > 0));
                     $a[$j + 1] = $v;
                 }
             }
@@ -543,27 +543,27 @@ final class Loops
         // reversed (no equal elements, so reversing is the stable order). Random input leaves
         // both scans after a few comparisons.
         $i = 1;
-        while ($i < $n && !(strcasecmp($a[$i - 1], $a[$i]) > 0)) {
+        while ($i < $n && !(\strcasecmp($a[$i - 1], $a[$i]) > 0)) {
             ++$i;
         }
         if ($i === $n) {
             $arr = $a;
-            return $perm ? range(0, $n - 1) : [];
+            return $perm ? \range(0, $n - 1) : [];
         }
         if ($i === 1) {
-            while ($i < $n && (strcasecmp($a[$i - 1], $a[$i]) > 0)) {
+            while ($i < $n && (\strcasecmp($a[$i - 1], $a[$i]) > 0)) {
                 ++$i;
             }
             if ($i === $n) {
-                $arr = array_reverse($a);
-                return $perm ? range($n - 1, 0) : [];
+                $arr = \array_reverse($a);
+                return $perm ? \range($n - 1, 0) : [];
             }
         }
 
         // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
-        $ix = range(0, $n - 1);
+        $ix = \range(0, $n - 1);
 
         // Local (not static) partition stacks: a comparison can run user code (__toString()),
         // which could call this function again. Depth stays below log2(n) + 1.
@@ -583,7 +583,7 @@ final class Loops
                 $ia = $ix[$low];
                 $vb = $a[$mid];
                 $ib = $ix[$mid];
-                if ((($c = strcasecmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
+                if ((($c = \strcasecmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
                     $a[$low] = $vb;
                     $ix[$low] = $ib;
                     $a[$mid] = $va;
@@ -593,7 +593,7 @@ final class Loops
                 }
                 $vc = $a[$high];
                 $ic = $ix[$high];
-                if ((($c = strcasecmp($vb, $vc)) > 0 || ($c === 0 && $ib > $ic))) {
+                if ((($c = \strcasecmp($vb, $vc)) > 0 || ($c === 0 && $ib > $ic))) {
                     $a[$mid] = $vc;
                     $ix[$mid] = $ic;
                     $a[$high] = $vb;
@@ -602,7 +602,7 @@ final class Loops
                     $ib = $ic;
                     $va = $a[$low];
                     $ia = $ix[$low];
-                    if ((($c = strcasecmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
+                    if ((($c = \strcasecmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
                         $a[$low] = $vb;
                         $ix[$low] = $ib;
                         $a[$mid] = $va;
@@ -618,10 +618,10 @@ final class Loops
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
-                    while ((($c = strcasecmp(($x = $a[$i]), $p)) < 0 || ($c === 0 && $ix[$i] < $pi))) {
+                    while ((($c = \strcasecmp(($x = $a[$i]), $p)) < 0 || ($c === 0 && $ix[$i] < $pi))) {
                         ++$i;
                     }
-                    while ((($c = strcasecmp(($y = $a[$j]), $p)) > 0 || ($c === 0 && $ix[$j] > $pi))) {
+                    while ((($c = \strcasecmp(($y = $a[$j]), $p)) > 0 || ($c === 0 && $ix[$j] > $pi))) {
                         --$j;
                     }
                     if ($i >= $j) {
@@ -670,7 +670,7 @@ final class Loops
         $mi = $ix[0];
         for ($i = 1; $i < 17; ++$i) {
             $v = $a[$i];
-            if ((($c = strcasecmp($v, $mv)) < 0 || ($c === 0 && $ix[$i] < $mi))) {
+            if ((($c = \strcasecmp($v, $mv)) < 0 || ($c === 0 && $ix[$i] < $mi))) {
                 $m = $i;
                 $mv = $v;
                 $mi = $ix[$i];
@@ -689,13 +689,13 @@ final class Loops
             $vi = $ix[$i];
             $j = $i - 1;
             $w = $a[$j];
-            if ((($c = strcasecmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi))) {
+            if ((($c = \strcasecmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi))) {
                 do {
                     $a[$j + 1] = $w;
                     $ix[$j + 1] = $ix[$j];
                     --$j;
                     $w = $a[$j];
-                } while ((($c = strcasecmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi)));
+                } while ((($c = \strcasecmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi)));
                 $a[$j + 1] = $v;
                 $ix[$j + 1] = $vi;
             }
@@ -731,17 +731,17 @@ final class Loops
         // stacks) costs more than it saves here.
         if ($n <= 16) {
             if ($perm) {
-                $ix = range(0, $n - 1);
+                $ix = \range(0, $n - 1);
                 for ($i = 1; $i < $n; ++$i) {
                     $v = $a[$i];
                     $vi = $ix[$i];
                     $j = $i - 1;
-                    if ((strnatcmp($a[$j], $v) > 0)) {
+                    if ((\strnatcmp($a[$j], $v) > 0)) {
                         do {
                             $a[$j + 1] = $a[$j];
                             $ix[$j + 1] = $ix[$j];
                             --$j;
-                        } while ($j >= 0 && (strnatcmp($a[$j], $v) > 0));
+                        } while ($j >= 0 && (\strnatcmp($a[$j], $v) > 0));
                         $a[$j + 1] = $v;
                         $ix[$j + 1] = $vi;
                     }
@@ -752,11 +752,11 @@ final class Loops
             for ($i = 1; $i < $n; ++$i) {
                 $v = $a[$i];
                 $j = $i - 1;
-                if ((strnatcmp($a[$j], $v) > 0)) {
+                if ((\strnatcmp($a[$j], $v) > 0)) {
                     do {
                         $a[$j + 1] = $a[$j];
                         --$j;
-                    } while ($j >= 0 && (strnatcmp($a[$j], $v) > 0));
+                    } while ($j >= 0 && (\strnatcmp($a[$j], $v) > 0));
                     $a[$j + 1] = $v;
                 }
             }
@@ -768,27 +768,27 @@ final class Loops
         // reversed (no equal elements, so reversing is the stable order). Random input leaves
         // both scans after a few comparisons.
         $i = 1;
-        while ($i < $n && !(strnatcmp($a[$i - 1], $a[$i]) > 0)) {
+        while ($i < $n && !(\strnatcmp($a[$i - 1], $a[$i]) > 0)) {
             ++$i;
         }
         if ($i === $n) {
             $arr = $a;
-            return $perm ? range(0, $n - 1) : [];
+            return $perm ? \range(0, $n - 1) : [];
         }
         if ($i === 1) {
-            while ($i < $n && (strnatcmp($a[$i - 1], $a[$i]) > 0)) {
+            while ($i < $n && (\strnatcmp($a[$i - 1], $a[$i]) > 0)) {
                 ++$i;
             }
             if ($i === $n) {
-                $arr = array_reverse($a);
-                return $perm ? range($n - 1, 0) : [];
+                $arr = \array_reverse($a);
+                return $perm ? \range($n - 1, 0) : [];
             }
         }
 
         // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
-        $ix = range(0, $n - 1);
+        $ix = \range(0, $n - 1);
 
         // Local (not static) partition stacks: a comparison can run user code (__toString()),
         // which could call this function again. Depth stays below log2(n) + 1.
@@ -808,7 +808,7 @@ final class Loops
                 $ia = $ix[$low];
                 $vb = $a[$mid];
                 $ib = $ix[$mid];
-                if ((($c = strnatcmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
+                if ((($c = \strnatcmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
                     $a[$low] = $vb;
                     $ix[$low] = $ib;
                     $a[$mid] = $va;
@@ -818,7 +818,7 @@ final class Loops
                 }
                 $vc = $a[$high];
                 $ic = $ix[$high];
-                if ((($c = strnatcmp($vb, $vc)) > 0 || ($c === 0 && $ib > $ic))) {
+                if ((($c = \strnatcmp($vb, $vc)) > 0 || ($c === 0 && $ib > $ic))) {
                     $a[$mid] = $vc;
                     $ix[$mid] = $ic;
                     $a[$high] = $vb;
@@ -827,7 +827,7 @@ final class Loops
                     $ib = $ic;
                     $va = $a[$low];
                     $ia = $ix[$low];
-                    if ((($c = strnatcmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
+                    if ((($c = \strnatcmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
                         $a[$low] = $vb;
                         $ix[$low] = $ib;
                         $a[$mid] = $va;
@@ -843,10 +843,10 @@ final class Loops
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
-                    while ((($c = strnatcmp(($x = $a[$i]), $p)) < 0 || ($c === 0 && $ix[$i] < $pi))) {
+                    while ((($c = \strnatcmp(($x = $a[$i]), $p)) < 0 || ($c === 0 && $ix[$i] < $pi))) {
                         ++$i;
                     }
-                    while ((($c = strnatcmp(($y = $a[$j]), $p)) > 0 || ($c === 0 && $ix[$j] > $pi))) {
+                    while ((($c = \strnatcmp(($y = $a[$j]), $p)) > 0 || ($c === 0 && $ix[$j] > $pi))) {
                         --$j;
                     }
                     if ($i >= $j) {
@@ -895,7 +895,7 @@ final class Loops
         $mi = $ix[0];
         for ($i = 1; $i < 17; ++$i) {
             $v = $a[$i];
-            if ((($c = strnatcmp($v, $mv)) < 0 || ($c === 0 && $ix[$i] < $mi))) {
+            if ((($c = \strnatcmp($v, $mv)) < 0 || ($c === 0 && $ix[$i] < $mi))) {
                 $m = $i;
                 $mv = $v;
                 $mi = $ix[$i];
@@ -914,13 +914,13 @@ final class Loops
             $vi = $ix[$i];
             $j = $i - 1;
             $w = $a[$j];
-            if ((($c = strnatcmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi))) {
+            if ((($c = \strnatcmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi))) {
                 do {
                     $a[$j + 1] = $w;
                     $ix[$j + 1] = $ix[$j];
                     --$j;
                     $w = $a[$j];
-                } while ((($c = strnatcmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi)));
+                } while ((($c = \strnatcmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi)));
                 $a[$j + 1] = $v;
                 $ix[$j + 1] = $vi;
             }
@@ -956,17 +956,17 @@ final class Loops
         // stacks) costs more than it saves here.
         if ($n <= 16) {
             if ($perm) {
-                $ix = range(0, $n - 1);
+                $ix = \range(0, $n - 1);
                 for ($i = 1; $i < $n; ++$i) {
                     $v = $a[$i];
                     $vi = $ix[$i];
                     $j = $i - 1;
-                    if ((strnatcasecmp($a[$j], $v) > 0)) {
+                    if ((\strnatcasecmp($a[$j], $v) > 0)) {
                         do {
                             $a[$j + 1] = $a[$j];
                             $ix[$j + 1] = $ix[$j];
                             --$j;
-                        } while ($j >= 0 && (strnatcasecmp($a[$j], $v) > 0));
+                        } while ($j >= 0 && (\strnatcasecmp($a[$j], $v) > 0));
                         $a[$j + 1] = $v;
                         $ix[$j + 1] = $vi;
                     }
@@ -977,11 +977,11 @@ final class Loops
             for ($i = 1; $i < $n; ++$i) {
                 $v = $a[$i];
                 $j = $i - 1;
-                if ((strnatcasecmp($a[$j], $v) > 0)) {
+                if ((\strnatcasecmp($a[$j], $v) > 0)) {
                     do {
                         $a[$j + 1] = $a[$j];
                         --$j;
-                    } while ($j >= 0 && (strnatcasecmp($a[$j], $v) > 0));
+                    } while ($j >= 0 && (\strnatcasecmp($a[$j], $v) > 0));
                     $a[$j + 1] = $v;
                 }
             }
@@ -993,27 +993,27 @@ final class Loops
         // reversed (no equal elements, so reversing is the stable order). Random input leaves
         // both scans after a few comparisons.
         $i = 1;
-        while ($i < $n && !(strnatcasecmp($a[$i - 1], $a[$i]) > 0)) {
+        while ($i < $n && !(\strnatcasecmp($a[$i - 1], $a[$i]) > 0)) {
             ++$i;
         }
         if ($i === $n) {
             $arr = $a;
-            return $perm ? range(0, $n - 1) : [];
+            return $perm ? \range(0, $n - 1) : [];
         }
         if ($i === 1) {
-            while ($i < $n && (strnatcasecmp($a[$i - 1], $a[$i]) > 0)) {
+            while ($i < $n && (\strnatcasecmp($a[$i - 1], $a[$i]) > 0)) {
                 ++$i;
             }
             if ($i === $n) {
-                $arr = array_reverse($a);
-                return $perm ? range($n - 1, 0) : [];
+                $arr = \array_reverse($a);
+                return $perm ? \range($n - 1, 0) : [];
             }
         }
 
         // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
-        $ix = range(0, $n - 1);
+        $ix = \range(0, $n - 1);
 
         // Local (not static) partition stacks: a comparison can run user code (__toString()),
         // which could call this function again. Depth stays below log2(n) + 1.
@@ -1033,7 +1033,7 @@ final class Loops
                 $ia = $ix[$low];
                 $vb = $a[$mid];
                 $ib = $ix[$mid];
-                if ((($c = strnatcasecmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
+                if ((($c = \strnatcasecmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
                     $a[$low] = $vb;
                     $ix[$low] = $ib;
                     $a[$mid] = $va;
@@ -1043,7 +1043,7 @@ final class Loops
                 }
                 $vc = $a[$high];
                 $ic = $ix[$high];
-                if ((($c = strnatcasecmp($vb, $vc)) > 0 || ($c === 0 && $ib > $ic))) {
+                if ((($c = \strnatcasecmp($vb, $vc)) > 0 || ($c === 0 && $ib > $ic))) {
                     $a[$mid] = $vc;
                     $ix[$mid] = $ic;
                     $a[$high] = $vb;
@@ -1052,7 +1052,7 @@ final class Loops
                     $ib = $ic;
                     $va = $a[$low];
                     $ia = $ix[$low];
-                    if ((($c = strnatcasecmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
+                    if ((($c = \strnatcasecmp($va, $vb)) > 0 || ($c === 0 && $ia > $ib))) {
                         $a[$low] = $vb;
                         $ix[$low] = $ib;
                         $a[$mid] = $va;
@@ -1068,10 +1068,10 @@ final class Loops
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
-                    while ((($c = strnatcasecmp(($x = $a[$i]), $p)) < 0 || ($c === 0 && $ix[$i] < $pi))) {
+                    while ((($c = \strnatcasecmp(($x = $a[$i]), $p)) < 0 || ($c === 0 && $ix[$i] < $pi))) {
                         ++$i;
                     }
-                    while ((($c = strnatcasecmp(($y = $a[$j]), $p)) > 0 || ($c === 0 && $ix[$j] > $pi))) {
+                    while ((($c = \strnatcasecmp(($y = $a[$j]), $p)) > 0 || ($c === 0 && $ix[$j] > $pi))) {
                         --$j;
                     }
                     if ($i >= $j) {
@@ -1120,7 +1120,7 @@ final class Loops
         $mi = $ix[0];
         for ($i = 1; $i < 17; ++$i) {
             $v = $a[$i];
-            if ((($c = strnatcasecmp($v, $mv)) < 0 || ($c === 0 && $ix[$i] < $mi))) {
+            if ((($c = \strnatcasecmp($v, $mv)) < 0 || ($c === 0 && $ix[$i] < $mi))) {
                 $m = $i;
                 $mv = $v;
                 $mi = $ix[$i];
@@ -1139,13 +1139,13 @@ final class Loops
             $vi = $ix[$i];
             $j = $i - 1;
             $w = $a[$j];
-            if ((($c = strnatcasecmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi))) {
+            if ((($c = \strnatcasecmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi))) {
                 do {
                     $a[$j + 1] = $w;
                     $ix[$j + 1] = $ix[$j];
                     --$j;
                     $w = $a[$j];
-                } while ((($c = strnatcasecmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi)));
+                } while ((($c = \strnatcasecmp($w, $v)) > 0 || ($c === 0 && $ix[$j] > $vi)));
                 $a[$j + 1] = $v;
                 $ix[$j + 1] = $vi;
             }
@@ -1181,7 +1181,7 @@ final class Loops
         // stacks) costs more than it saves here.
         if ($n <= 16) {
             if ($perm) {
-                $ix = range(0, $n - 1);
+                $ix = \range(0, $n - 1);
                 for ($i = 1; $i < $n; ++$i) {
                     $v = $a[$i];
                     $vi = $ix[$i];
@@ -1223,22 +1223,22 @@ final class Loops
         }
         if ($i === $n) {
             $arr = $a;
-            return $perm ? range(0, $n - 1) : [];
+            return $perm ? \range(0, $n - 1) : [];
         }
         if ($i === 1) {
             while ($i < $n && ($a[$i - 1] < $a[$i])) {
                 ++$i;
             }
             if ($i === $n) {
-                $arr = array_reverse($a);
-                return $perm ? range($n - 1, 0) : [];
+                $arr = \array_reverse($a);
+                return $perm ? \range($n - 1, 0) : [];
             }
         }
 
         // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
-        $ix = range(0, $n - 1);
+        $ix = \range(0, $n - 1);
 
         // Local (not static) partition stacks: a comparison can run user code (__toString()),
         // which could call this function again. Depth stays below log2(n) + 1.
@@ -1406,17 +1406,17 @@ final class Loops
         // stacks) costs more than it saves here.
         if ($n <= 16) {
             if ($perm) {
-                $ix = range(0, $n - 1);
+                $ix = \range(0, $n - 1);
                 for ($i = 1; $i < $n; ++$i) {
                     $v = $a[$i];
                     $vi = $ix[$i];
                     $j = $i - 1;
-                    if ((strcmp($a[$j], $v) < 0)) {
+                    if ((\strcmp($a[$j], $v) < 0)) {
                         do {
                             $a[$j + 1] = $a[$j];
                             $ix[$j + 1] = $ix[$j];
                             --$j;
-                        } while ($j >= 0 && (strcmp($a[$j], $v) < 0));
+                        } while ($j >= 0 && (\strcmp($a[$j], $v) < 0));
                         $a[$j + 1] = $v;
                         $ix[$j + 1] = $vi;
                     }
@@ -1427,11 +1427,11 @@ final class Loops
             for ($i = 1; $i < $n; ++$i) {
                 $v = $a[$i];
                 $j = $i - 1;
-                if ((strcmp($a[$j], $v) < 0)) {
+                if ((\strcmp($a[$j], $v) < 0)) {
                     do {
                         $a[$j + 1] = $a[$j];
                         --$j;
-                    } while ($j >= 0 && (strcmp($a[$j], $v) < 0));
+                    } while ($j >= 0 && (\strcmp($a[$j], $v) < 0));
                     $a[$j + 1] = $v;
                 }
             }
@@ -1443,27 +1443,27 @@ final class Loops
         // reversed (no equal elements, so reversing is the stable order). Random input leaves
         // both scans after a few comparisons.
         $i = 1;
-        while ($i < $n && !(strcmp($a[$i - 1], $a[$i]) < 0)) {
+        while ($i < $n && !(\strcmp($a[$i - 1], $a[$i]) < 0)) {
             ++$i;
         }
         if ($i === $n) {
             $arr = $a;
-            return $perm ? range(0, $n - 1) : [];
+            return $perm ? \range(0, $n - 1) : [];
         }
         if ($i === 1) {
-            while ($i < $n && (strcmp($a[$i - 1], $a[$i]) < 0)) {
+            while ($i < $n && (\strcmp($a[$i - 1], $a[$i]) < 0)) {
                 ++$i;
             }
             if ($i === $n) {
-                $arr = array_reverse($a);
-                return $perm ? range($n - 1, 0) : [];
+                $arr = \array_reverse($a);
+                return $perm ? \range($n - 1, 0) : [];
             }
         }
 
         // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
-        $ix = range(0, $n - 1);
+        $ix = \range(0, $n - 1);
 
         // Local (not static) partition stacks: a comparison can run user code (__toString()),
         // which could call this function again. Depth stays below log2(n) + 1.
@@ -1483,7 +1483,7 @@ final class Loops
                 $ia = $ix[$low];
                 $vb = $a[$mid];
                 $ib = $ix[$mid];
-                if ((($c = strcmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
+                if ((($c = \strcmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
                     $a[$low] = $vb;
                     $ix[$low] = $ib;
                     $a[$mid] = $va;
@@ -1493,7 +1493,7 @@ final class Loops
                 }
                 $vc = $a[$high];
                 $ic = $ix[$high];
-                if ((($c = strcmp($vb, $vc)) < 0 || ($c === 0 && $ib > $ic))) {
+                if ((($c = \strcmp($vb, $vc)) < 0 || ($c === 0 && $ib > $ic))) {
                     $a[$mid] = $vc;
                     $ix[$mid] = $ic;
                     $a[$high] = $vb;
@@ -1502,7 +1502,7 @@ final class Loops
                     $ib = $ic;
                     $va = $a[$low];
                     $ia = $ix[$low];
-                    if ((($c = strcmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
+                    if ((($c = \strcmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
                         $a[$low] = $vb;
                         $ix[$low] = $ib;
                         $a[$mid] = $va;
@@ -1518,10 +1518,10 @@ final class Loops
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
-                    while ((($c = strcmp(($x = $a[$i]), $p)) > 0 || ($c === 0 && $ix[$i] < $pi))) {
+                    while ((($c = \strcmp(($x = $a[$i]), $p)) > 0 || ($c === 0 && $ix[$i] < $pi))) {
                         ++$i;
                     }
-                    while ((($c = strcmp(($y = $a[$j]), $p)) < 0 || ($c === 0 && $ix[$j] > $pi))) {
+                    while ((($c = \strcmp(($y = $a[$j]), $p)) < 0 || ($c === 0 && $ix[$j] > $pi))) {
                         --$j;
                     }
                     if ($i >= $j) {
@@ -1570,7 +1570,7 @@ final class Loops
         $mi = $ix[0];
         for ($i = 1; $i < 17; ++$i) {
             $v = $a[$i];
-            if ((($c = strcmp($v, $mv)) > 0 || ($c === 0 && $ix[$i] < $mi))) {
+            if ((($c = \strcmp($v, $mv)) > 0 || ($c === 0 && $ix[$i] < $mi))) {
                 $m = $i;
                 $mv = $v;
                 $mi = $ix[$i];
@@ -1589,13 +1589,13 @@ final class Loops
             $vi = $ix[$i];
             $j = $i - 1;
             $w = $a[$j];
-            if ((($c = strcmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi))) {
+            if ((($c = \strcmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi))) {
                 do {
                     $a[$j + 1] = $w;
                     $ix[$j + 1] = $ix[$j];
                     --$j;
                     $w = $a[$j];
-                } while ((($c = strcmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi)));
+                } while ((($c = \strcmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi)));
                 $a[$j + 1] = $v;
                 $ix[$j + 1] = $vi;
             }
@@ -1631,17 +1631,17 @@ final class Loops
         // stacks) costs more than it saves here.
         if ($n <= 16) {
             if ($perm) {
-                $ix = range(0, $n - 1);
+                $ix = \range(0, $n - 1);
                 for ($i = 1; $i < $n; ++$i) {
                     $v = $a[$i];
                     $vi = $ix[$i];
                     $j = $i - 1;
-                    if ((strcasecmp($a[$j], $v) < 0)) {
+                    if ((\strcasecmp($a[$j], $v) < 0)) {
                         do {
                             $a[$j + 1] = $a[$j];
                             $ix[$j + 1] = $ix[$j];
                             --$j;
-                        } while ($j >= 0 && (strcasecmp($a[$j], $v) < 0));
+                        } while ($j >= 0 && (\strcasecmp($a[$j], $v) < 0));
                         $a[$j + 1] = $v;
                         $ix[$j + 1] = $vi;
                     }
@@ -1652,11 +1652,11 @@ final class Loops
             for ($i = 1; $i < $n; ++$i) {
                 $v = $a[$i];
                 $j = $i - 1;
-                if ((strcasecmp($a[$j], $v) < 0)) {
+                if ((\strcasecmp($a[$j], $v) < 0)) {
                     do {
                         $a[$j + 1] = $a[$j];
                         --$j;
-                    } while ($j >= 0 && (strcasecmp($a[$j], $v) < 0));
+                    } while ($j >= 0 && (\strcasecmp($a[$j], $v) < 0));
                     $a[$j + 1] = $v;
                 }
             }
@@ -1668,27 +1668,27 @@ final class Loops
         // reversed (no equal elements, so reversing is the stable order). Random input leaves
         // both scans after a few comparisons.
         $i = 1;
-        while ($i < $n && !(strcasecmp($a[$i - 1], $a[$i]) < 0)) {
+        while ($i < $n && !(\strcasecmp($a[$i - 1], $a[$i]) < 0)) {
             ++$i;
         }
         if ($i === $n) {
             $arr = $a;
-            return $perm ? range(0, $n - 1) : [];
+            return $perm ? \range(0, $n - 1) : [];
         }
         if ($i === 1) {
-            while ($i < $n && (strcasecmp($a[$i - 1], $a[$i]) < 0)) {
+            while ($i < $n && (\strcasecmp($a[$i - 1], $a[$i]) < 0)) {
                 ++$i;
             }
             if ($i === $n) {
-                $arr = array_reverse($a);
-                return $perm ? range($n - 1, 0) : [];
+                $arr = \array_reverse($a);
+                return $perm ? \range($n - 1, 0) : [];
             }
         }
 
         // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
-        $ix = range(0, $n - 1);
+        $ix = \range(0, $n - 1);
 
         // Local (not static) partition stacks: a comparison can run user code (__toString()),
         // which could call this function again. Depth stays below log2(n) + 1.
@@ -1708,7 +1708,7 @@ final class Loops
                 $ia = $ix[$low];
                 $vb = $a[$mid];
                 $ib = $ix[$mid];
-                if ((($c = strcasecmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
+                if ((($c = \strcasecmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
                     $a[$low] = $vb;
                     $ix[$low] = $ib;
                     $a[$mid] = $va;
@@ -1718,7 +1718,7 @@ final class Loops
                 }
                 $vc = $a[$high];
                 $ic = $ix[$high];
-                if ((($c = strcasecmp($vb, $vc)) < 0 || ($c === 0 && $ib > $ic))) {
+                if ((($c = \strcasecmp($vb, $vc)) < 0 || ($c === 0 && $ib > $ic))) {
                     $a[$mid] = $vc;
                     $ix[$mid] = $ic;
                     $a[$high] = $vb;
@@ -1727,7 +1727,7 @@ final class Loops
                     $ib = $ic;
                     $va = $a[$low];
                     $ia = $ix[$low];
-                    if ((($c = strcasecmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
+                    if ((($c = \strcasecmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
                         $a[$low] = $vb;
                         $ix[$low] = $ib;
                         $a[$mid] = $va;
@@ -1743,10 +1743,10 @@ final class Loops
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
-                    while ((($c = strcasecmp(($x = $a[$i]), $p)) > 0 || ($c === 0 && $ix[$i] < $pi))) {
+                    while ((($c = \strcasecmp(($x = $a[$i]), $p)) > 0 || ($c === 0 && $ix[$i] < $pi))) {
                         ++$i;
                     }
-                    while ((($c = strcasecmp(($y = $a[$j]), $p)) < 0 || ($c === 0 && $ix[$j] > $pi))) {
+                    while ((($c = \strcasecmp(($y = $a[$j]), $p)) < 0 || ($c === 0 && $ix[$j] > $pi))) {
                         --$j;
                     }
                     if ($i >= $j) {
@@ -1795,7 +1795,7 @@ final class Loops
         $mi = $ix[0];
         for ($i = 1; $i < 17; ++$i) {
             $v = $a[$i];
-            if ((($c = strcasecmp($v, $mv)) > 0 || ($c === 0 && $ix[$i] < $mi))) {
+            if ((($c = \strcasecmp($v, $mv)) > 0 || ($c === 0 && $ix[$i] < $mi))) {
                 $m = $i;
                 $mv = $v;
                 $mi = $ix[$i];
@@ -1814,13 +1814,13 @@ final class Loops
             $vi = $ix[$i];
             $j = $i - 1;
             $w = $a[$j];
-            if ((($c = strcasecmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi))) {
+            if ((($c = \strcasecmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi))) {
                 do {
                     $a[$j + 1] = $w;
                     $ix[$j + 1] = $ix[$j];
                     --$j;
                     $w = $a[$j];
-                } while ((($c = strcasecmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi)));
+                } while ((($c = \strcasecmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi)));
                 $a[$j + 1] = $v;
                 $ix[$j + 1] = $vi;
             }
@@ -1856,17 +1856,17 @@ final class Loops
         // stacks) costs more than it saves here.
         if ($n <= 16) {
             if ($perm) {
-                $ix = range(0, $n - 1);
+                $ix = \range(0, $n - 1);
                 for ($i = 1; $i < $n; ++$i) {
                     $v = $a[$i];
                     $vi = $ix[$i];
                     $j = $i - 1;
-                    if ((strnatcmp($a[$j], $v) < 0)) {
+                    if ((\strnatcmp($a[$j], $v) < 0)) {
                         do {
                             $a[$j + 1] = $a[$j];
                             $ix[$j + 1] = $ix[$j];
                             --$j;
-                        } while ($j >= 0 && (strnatcmp($a[$j], $v) < 0));
+                        } while ($j >= 0 && (\strnatcmp($a[$j], $v) < 0));
                         $a[$j + 1] = $v;
                         $ix[$j + 1] = $vi;
                     }
@@ -1877,11 +1877,11 @@ final class Loops
             for ($i = 1; $i < $n; ++$i) {
                 $v = $a[$i];
                 $j = $i - 1;
-                if ((strnatcmp($a[$j], $v) < 0)) {
+                if ((\strnatcmp($a[$j], $v) < 0)) {
                     do {
                         $a[$j + 1] = $a[$j];
                         --$j;
-                    } while ($j >= 0 && (strnatcmp($a[$j], $v) < 0));
+                    } while ($j >= 0 && (\strnatcmp($a[$j], $v) < 0));
                     $a[$j + 1] = $v;
                 }
             }
@@ -1893,27 +1893,27 @@ final class Loops
         // reversed (no equal elements, so reversing is the stable order). Random input leaves
         // both scans after a few comparisons.
         $i = 1;
-        while ($i < $n && !(strnatcmp($a[$i - 1], $a[$i]) < 0)) {
+        while ($i < $n && !(\strnatcmp($a[$i - 1], $a[$i]) < 0)) {
             ++$i;
         }
         if ($i === $n) {
             $arr = $a;
-            return $perm ? range(0, $n - 1) : [];
+            return $perm ? \range(0, $n - 1) : [];
         }
         if ($i === 1) {
-            while ($i < $n && (strnatcmp($a[$i - 1], $a[$i]) < 0)) {
+            while ($i < $n && (\strnatcmp($a[$i - 1], $a[$i]) < 0)) {
                 ++$i;
             }
             if ($i === $n) {
-                $arr = array_reverse($a);
-                return $perm ? range($n - 1, 0) : [];
+                $arr = \array_reverse($a);
+                return $perm ? \range($n - 1, 0) : [];
             }
         }
 
         // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
-        $ix = range(0, $n - 1);
+        $ix = \range(0, $n - 1);
 
         // Local (not static) partition stacks: a comparison can run user code (__toString()),
         // which could call this function again. Depth stays below log2(n) + 1.
@@ -1933,7 +1933,7 @@ final class Loops
                 $ia = $ix[$low];
                 $vb = $a[$mid];
                 $ib = $ix[$mid];
-                if ((($c = strnatcmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
+                if ((($c = \strnatcmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
                     $a[$low] = $vb;
                     $ix[$low] = $ib;
                     $a[$mid] = $va;
@@ -1943,7 +1943,7 @@ final class Loops
                 }
                 $vc = $a[$high];
                 $ic = $ix[$high];
-                if ((($c = strnatcmp($vb, $vc)) < 0 || ($c === 0 && $ib > $ic))) {
+                if ((($c = \strnatcmp($vb, $vc)) < 0 || ($c === 0 && $ib > $ic))) {
                     $a[$mid] = $vc;
                     $ix[$mid] = $ic;
                     $a[$high] = $vb;
@@ -1952,7 +1952,7 @@ final class Loops
                     $ib = $ic;
                     $va = $a[$low];
                     $ia = $ix[$low];
-                    if ((($c = strnatcmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
+                    if ((($c = \strnatcmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
                         $a[$low] = $vb;
                         $ix[$low] = $ib;
                         $a[$mid] = $va;
@@ -1968,10 +1968,10 @@ final class Loops
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
-                    while ((($c = strnatcmp(($x = $a[$i]), $p)) > 0 || ($c === 0 && $ix[$i] < $pi))) {
+                    while ((($c = \strnatcmp(($x = $a[$i]), $p)) > 0 || ($c === 0 && $ix[$i] < $pi))) {
                         ++$i;
                     }
-                    while ((($c = strnatcmp(($y = $a[$j]), $p)) < 0 || ($c === 0 && $ix[$j] > $pi))) {
+                    while ((($c = \strnatcmp(($y = $a[$j]), $p)) < 0 || ($c === 0 && $ix[$j] > $pi))) {
                         --$j;
                     }
                     if ($i >= $j) {
@@ -2020,7 +2020,7 @@ final class Loops
         $mi = $ix[0];
         for ($i = 1; $i < 17; ++$i) {
             $v = $a[$i];
-            if ((($c = strnatcmp($v, $mv)) > 0 || ($c === 0 && $ix[$i] < $mi))) {
+            if ((($c = \strnatcmp($v, $mv)) > 0 || ($c === 0 && $ix[$i] < $mi))) {
                 $m = $i;
                 $mv = $v;
                 $mi = $ix[$i];
@@ -2039,13 +2039,13 @@ final class Loops
             $vi = $ix[$i];
             $j = $i - 1;
             $w = $a[$j];
-            if ((($c = strnatcmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi))) {
+            if ((($c = \strnatcmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi))) {
                 do {
                     $a[$j + 1] = $w;
                     $ix[$j + 1] = $ix[$j];
                     --$j;
                     $w = $a[$j];
-                } while ((($c = strnatcmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi)));
+                } while ((($c = \strnatcmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi)));
                 $a[$j + 1] = $v;
                 $ix[$j + 1] = $vi;
             }
@@ -2081,17 +2081,17 @@ final class Loops
         // stacks) costs more than it saves here.
         if ($n <= 16) {
             if ($perm) {
-                $ix = range(0, $n - 1);
+                $ix = \range(0, $n - 1);
                 for ($i = 1; $i < $n; ++$i) {
                     $v = $a[$i];
                     $vi = $ix[$i];
                     $j = $i - 1;
-                    if ((strnatcasecmp($a[$j], $v) < 0)) {
+                    if ((\strnatcasecmp($a[$j], $v) < 0)) {
                         do {
                             $a[$j + 1] = $a[$j];
                             $ix[$j + 1] = $ix[$j];
                             --$j;
-                        } while ($j >= 0 && (strnatcasecmp($a[$j], $v) < 0));
+                        } while ($j >= 0 && (\strnatcasecmp($a[$j], $v) < 0));
                         $a[$j + 1] = $v;
                         $ix[$j + 1] = $vi;
                     }
@@ -2102,11 +2102,11 @@ final class Loops
             for ($i = 1; $i < $n; ++$i) {
                 $v = $a[$i];
                 $j = $i - 1;
-                if ((strnatcasecmp($a[$j], $v) < 0)) {
+                if ((\strnatcasecmp($a[$j], $v) < 0)) {
                     do {
                         $a[$j + 1] = $a[$j];
                         --$j;
-                    } while ($j >= 0 && (strnatcasecmp($a[$j], $v) < 0));
+                    } while ($j >= 0 && (\strnatcasecmp($a[$j], $v) < 0));
                     $a[$j + 1] = $v;
                 }
             }
@@ -2118,27 +2118,27 @@ final class Loops
         // reversed (no equal elements, so reversing is the stable order). Random input leaves
         // both scans after a few comparisons.
         $i = 1;
-        while ($i < $n && !(strnatcasecmp($a[$i - 1], $a[$i]) < 0)) {
+        while ($i < $n && !(\strnatcasecmp($a[$i - 1], $a[$i]) < 0)) {
             ++$i;
         }
         if ($i === $n) {
             $arr = $a;
-            return $perm ? range(0, $n - 1) : [];
+            return $perm ? \range(0, $n - 1) : [];
         }
         if ($i === 1) {
-            while ($i < $n && (strnatcasecmp($a[$i - 1], $a[$i]) < 0)) {
+            while ($i < $n && (\strnatcasecmp($a[$i - 1], $a[$i]) < 0)) {
                 ++$i;
             }
             if ($i === $n) {
-                $arr = array_reverse($a);
-                return $perm ? range($n - 1, 0) : [];
+                $arr = \array_reverse($a);
+                return $perm ? \range($n - 1, 0) : [];
             }
         }
 
         // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
-        $ix = range(0, $n - 1);
+        $ix = \range(0, $n - 1);
 
         // Local (not static) partition stacks: a comparison can run user code (__toString()),
         // which could call this function again. Depth stays below log2(n) + 1.
@@ -2158,7 +2158,7 @@ final class Loops
                 $ia = $ix[$low];
                 $vb = $a[$mid];
                 $ib = $ix[$mid];
-                if ((($c = strnatcasecmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
+                if ((($c = \strnatcasecmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
                     $a[$low] = $vb;
                     $ix[$low] = $ib;
                     $a[$mid] = $va;
@@ -2168,7 +2168,7 @@ final class Loops
                 }
                 $vc = $a[$high];
                 $ic = $ix[$high];
-                if ((($c = strnatcasecmp($vb, $vc)) < 0 || ($c === 0 && $ib > $ic))) {
+                if ((($c = \strnatcasecmp($vb, $vc)) < 0 || ($c === 0 && $ib > $ic))) {
                     $a[$mid] = $vc;
                     $ix[$mid] = $ic;
                     $a[$high] = $vb;
@@ -2177,7 +2177,7 @@ final class Loops
                     $ib = $ic;
                     $va = $a[$low];
                     $ia = $ix[$low];
-                    if ((($c = strnatcasecmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
+                    if ((($c = \strnatcasecmp($va, $vb)) < 0 || ($c === 0 && $ia > $ib))) {
                         $a[$low] = $vb;
                         $ix[$low] = $ib;
                         $a[$mid] = $va;
@@ -2193,10 +2193,10 @@ final class Loops
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
-                    while ((($c = strnatcasecmp(($x = $a[$i]), $p)) > 0 || ($c === 0 && $ix[$i] < $pi))) {
+                    while ((($c = \strnatcasecmp(($x = $a[$i]), $p)) > 0 || ($c === 0 && $ix[$i] < $pi))) {
                         ++$i;
                     }
-                    while ((($c = strnatcasecmp(($y = $a[$j]), $p)) < 0 || ($c === 0 && $ix[$j] > $pi))) {
+                    while ((($c = \strnatcasecmp(($y = $a[$j]), $p)) < 0 || ($c === 0 && $ix[$j] > $pi))) {
                         --$j;
                     }
                     if ($i >= $j) {
@@ -2245,7 +2245,7 @@ final class Loops
         $mi = $ix[0];
         for ($i = 1; $i < 17; ++$i) {
             $v = $a[$i];
-            if ((($c = strnatcasecmp($v, $mv)) > 0 || ($c === 0 && $ix[$i] < $mi))) {
+            if ((($c = \strnatcasecmp($v, $mv)) > 0 || ($c === 0 && $ix[$i] < $mi))) {
                 $m = $i;
                 $mv = $v;
                 $mi = $ix[$i];
@@ -2264,13 +2264,13 @@ final class Loops
             $vi = $ix[$i];
             $j = $i - 1;
             $w = $a[$j];
-            if ((($c = strnatcasecmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi))) {
+            if ((($c = \strnatcasecmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi))) {
                 do {
                     $a[$j + 1] = $w;
                     $ix[$j + 1] = $ix[$j];
                     --$j;
                     $w = $a[$j];
-                } while ((($c = strnatcasecmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi)));
+                } while ((($c = \strnatcasecmp($w, $v)) < 0 || ($c === 0 && $ix[$j] > $vi)));
                 $a[$j + 1] = $v;
                 $ix[$j + 1] = $vi;
             }
@@ -2441,18 +2441,18 @@ final class Loops
                 // Median of three, sorted in place: a[low] <= a[mid] <= a[high].
                 $x = $a[$low];
                 $y = $a[$mid];
-                if ((strcmp($x, $y) > 0)) {
+                if ((\strcmp($x, $y) > 0)) {
                     $a[$low] = $y;
                     $a[$mid] = $x;
                     $y = $x;
                 }
                 $z = $a[$high];
-                if ((strcmp($y, $z) > 0)) {
+                if ((\strcmp($y, $z) > 0)) {
                     $a[$mid] = $z;
                     $a[$high] = $y;
                     $y = $z;
                     $x = $a[$low];
-                    if ((strcmp($x, $y) > 0)) {
+                    if ((\strcmp($x, $y) > 0)) {
                         $a[$low] = $y;
                         $a[$mid] = $x;
                         $y = $x;
@@ -2464,10 +2464,10 @@ final class Loops
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
-                    while ((strcmp($a[$i], $p) < 0)) {
+                    while ((\strcmp($a[$i], $p) < 0)) {
                         ++$i;
                     }
-                    while ((strcmp($a[$j], $p) > 0)) {
+                    while ((\strcmp($a[$j], $p) > 0)) {
                         --$j;
                     }
                     if ($i >= $j) {
@@ -2510,7 +2510,7 @@ final class Loops
         $mv = $a[0];
         $limit = $n < 17 ? $n : 17;
         for ($i = 1; $i < $limit; ++$i) {
-            if ((strcmp($a[$i], $mv) < 0)) {
+            if ((\strcmp($a[$i], $mv) < 0)) {
                 $m = $i;
                 $mv = $a[$i];
             }
@@ -2524,11 +2524,11 @@ final class Loops
         for ($i = 2; $i < $n; ++$i) {
             $v = $a[$i];
             $j = $i - 1;
-            if ((strcmp($a[$j], $v) > 0)) {
+            if ((\strcmp($a[$j], $v) > 0)) {
                 do {
                     $a[$j + 1] = $a[$j];
                     --$j;
-                } while ((strcmp($a[$j], $v) > 0));
+                } while ((\strcmp($a[$j], $v) > 0));
                 $a[$j + 1] = $v;
             }
         }
@@ -2697,18 +2697,18 @@ final class Loops
                 // Median of three, sorted in place: a[low] <= a[mid] <= a[high].
                 $x = $a[$low];
                 $y = $a[$mid];
-                if ((strcmp($x, $y) < 0)) {
+                if ((\strcmp($x, $y) < 0)) {
                     $a[$low] = $y;
                     $a[$mid] = $x;
                     $y = $x;
                 }
                 $z = $a[$high];
-                if ((strcmp($y, $z) < 0)) {
+                if ((\strcmp($y, $z) < 0)) {
                     $a[$mid] = $z;
                     $a[$high] = $y;
                     $y = $z;
                     $x = $a[$low];
-                    if ((strcmp($x, $y) < 0)) {
+                    if ((\strcmp($x, $y) < 0)) {
                         $a[$low] = $y;
                         $a[$mid] = $x;
                         $y = $x;
@@ -2720,10 +2720,10 @@ final class Loops
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
-                    while ((strcmp($a[$i], $p) > 0)) {
+                    while ((\strcmp($a[$i], $p) > 0)) {
                         ++$i;
                     }
-                    while ((strcmp($a[$j], $p) < 0)) {
+                    while ((\strcmp($a[$j], $p) < 0)) {
                         --$j;
                     }
                     if ($i >= $j) {
@@ -2766,7 +2766,7 @@ final class Loops
         $mv = $a[0];
         $limit = $n < 17 ? $n : 17;
         for ($i = 1; $i < $limit; ++$i) {
-            if ((strcmp($a[$i], $mv) > 0)) {
+            if ((\strcmp($a[$i], $mv) > 0)) {
                 $m = $i;
                 $mv = $a[$i];
             }
@@ -2780,11 +2780,11 @@ final class Loops
         for ($i = 2; $i < $n; ++$i) {
             $v = $a[$i];
             $j = $i - 1;
-            if ((strcmp($a[$j], $v) < 0)) {
+            if ((\strcmp($a[$j], $v) < 0)) {
                 do {
                     $a[$j + 1] = $a[$j];
                     --$j;
-                } while ((strcmp($a[$j], $v) < 0));
+                } while ((\strcmp($a[$j], $v) < 0));
                 $a[$j + 1] = $v;
             }
         }
@@ -2826,10 +2826,10 @@ final class Loops
         }
         if ($i === $n) {
             $arr = $a;
-            return range(0, $n - 1);
+            return \range(0, $n - 1);
         }
 
-        $ax = range(0, $n - 1);
+        $ax = \range(0, $n - 1);
 
         // Insertion sort runs of 8 in place.
         for ($start = 0; $start < $n; $start += 8) {
@@ -2972,10 +2972,10 @@ final class Loops
         }
         if ($i === $n) {
             $arr = $a;
-            return range(0, $n - 1);
+            return \range(0, $n - 1);
         }
 
-        $ax = range(0, $n - 1);
+        $ax = \range(0, $n - 1);
 
         // Insertion sort runs of 8 in place.
         for ($start = 0; $start < $n; $start += 8) {

@@ -8,15 +8,16 @@ namespace Charm\Sort;
  * A stable sort configured once and used many times.
  *
  * ```php
- * $sorter = new Sorter(Order::Descending);
- * $sorter->sort([3, 1, 2]);                              // [3, 2, 1]
- * (new Sorter(key: fn($p) => $p->age))->sort($people);
+ * $sorter = new Sorter(fn($a, $b) => $a['age'] <=> $b['age']);   // like usort(), but stable and faster
+ * $sorter->sort($people);
+ * (new Sorter(key: fn($p) => $p->age))->sort($people);            // faster still: one call per element
+ * (new Sorter(order: Order::Descending))->sort([3, 1, 2]);        // [3, 2, 1]
  * ```
  *
  * The result is always a new array and the input is never modified. Elements that compare equal
- * keep their original order, in both directions. With the default settings the result is
+ * keep their original order, in both directions. With the built-in comparisons the result is
  * identical to PHP's `sort()`; see the README for the mapping to `rsort()`, `asort()`,
- * `ksort()` and the `SORT_*` flags.
+ * `ksort()`, `usort()` and the `SORT_*` flags.
  *
  * Inputs without a consistent order (NaN, or a mix of numeric and non-numeric strings under
  * `Comparison::Regular`) have no single correct sorted order; the result is then sorted by
@@ -24,39 +25,32 @@ namespace Charm\Sort;
  */
 final readonly class Sorter
 {
-    /** Name of the Loops method for this order and comparison. */
+    /** Name of the Loops method that does the sorting. */
     private string $loop;
 
     /**
+     * @param Comparison|\Closure $compare A built-in {@see Comparison}, or a function `fn($a, $b): int` like the
+     *        one `usort()` takes (negative, zero or positive). The function is called with the values, or with
+     *        the derived keys when `$key` is given. A bool return value is an error; return `$a <=> $b`.
+     *        With a closure, `Order::Descending` negates the result, and equal elements still keep their
+     *        original order.
      * @param Order $order Ascending or descending.
-     * @param Comparison $comparison How values, or sort keys when `$key` is given, are compared.
-     * @param \Closure|null $key Derives the sort key from a value. Called exactly once per
-     *        element, before sorting. The keys are compared with `$comparison`. When a key is an
-     *        array, the keys are compared column by column (lexicographically, the shorter
-     *        array first when it is a prefix of the other), not with PHP's `<` on arrays, which
-     *        compares the number of elements first.
-     * @param \Closure|null $compare A comparison function `fn($a, $b): int` like the one `usort()` takes: negative,
-     *        zero or positive. Sorting is stable and `Order::Descending` negates the result (it does not reverse the
-     *        ascending result, so equal elements keep their order). A bool return value is an error. Cannot be
-     *        combined with `$key` or a `$comparison` other than Regular. Without a comparison function, prefer `$key`:
-     *        it is called once per element instead of once per comparison, and is much faster.
+     * @param \Closure|null $key Derives the value to compare from each element. Called exactly once per
+     *        element, before sorting, so it is much cheaper than doing the same work inside a comparison
+     *        function. With a built-in comparison, a key that is an array makes the keys compare column by column
+     *        (lexicographically, the shorter array first when it is a prefix of the other), not with PHP's `<` on
+     *        arrays, which compares the number of elements first.
      * @param bool $preserveKeys Keep the array keys, like `asort()`, instead of returning a list.
-     * @param array<string|int, Order>|null $columns Internal: set by {@see byColumns()}.
-     * @param bool $versions Internal: set by {@see versions()}.
      */
     public function __construct(
+        public Comparison|\Closure $compare = Comparison::Regular,
         public Order $order = Order::Ascending,
-        public Comparison $comparison = Comparison::Regular,
         public ?\Closure $key = null,
-        public ?\Closure $compare = null,
         public bool $preserveKeys = false,
-        private ?array $columns = null,
-        private bool $versions = false,
     ) {
-        if ($compare !== null && ($key !== null || $comparison !== Comparison::Regular)) {
-            throw new \ValueError('compare cannot be combined with key or comparison');
-        }
-        $this->loop = self::loopName($order, $comparison);
+        $this->loop = $compare instanceof \Closure
+            ? ($order === Order::Ascending ? 'mergeAsc' : 'mergeDesc')
+            : self::loopName($order, $compare);
     }
 
     /**
@@ -68,22 +62,22 @@ final readonly class Sorter
      */
     public function sort(array $values): array
     {
-        if ($this->compare !== null) {
-            $sorted = array_values($values);
-            $ix = Loops::{$this->mergeLoop()}($sorted, $this->compare);
-            return $this->preserveKeys ? self::arrange(array_values($values), array_keys($values), $ix) : $sorted;
+        if ($this->key === null) {
+            if ($this->compare instanceof \Closure) {
+                $sorted = \array_values($values);
+                $ix = Loops::{$this->loop}($sorted, $this->compare);
+                return $this->preserveKeys ? self::arrange(\array_values($values), \array_keys($values), $ix) : $sorted;
+            }
+            // The common case: no key function, no keys to carry along. The loop sorts the list directly.
+            if ($this->compare === Comparison::Regular && !$this->preserveKeys) {
+                $a = \array_is_list($values) ? $values : \array_values($values);
+                Loops::{$this->loop}($a, false);
+                return $a;
+            }
         }
 
-        // The common case: no key function, no keys to carry along. The loop sorts the list directly.
-        if ($this->key === null && $this->comparison === Comparison::Regular && !$this->preserveKeys
-            && $this->columns === null && !$this->versions) {
-            $a = array_is_list($values) ? $values : array_values($values);
-            Loops::{$this->loop}($a, false);
-            return $a;
-        }
-
-        $keys = $this->preserveKeys ? array_keys($values) : null;
-        $values = array_values($values);
+        $keys = $this->preserveKeys ? \array_keys($values) : null;
+        $values = \array_values($values);
         if ($this->key === null) {
             $sortKeys = $values;
         } else {
@@ -106,89 +100,32 @@ final readonly class Sorter
      */
     public function sortKeys(array $values): array
     {
-        $keys = array_keys($values);
-        if ($this->compare !== null) {
-            Loops::{$this->mergeLoop()}($keys, $this->compare);
+        $keys = \array_keys($values);
+        if ($this->key === null) {
+            // Array keys are unique. Where distinct keys can never compare as equal, stability can't be
+            // observed and a plain quicksort on the keys is enough; with a comparison function the merge sort
+            // sorts the keys. Either way the values are then fetched by key.
+            if ($this->compare instanceof \Closure) {
+                Loops::{$this->loop}($keys, $this->compare);
+            } else {
+                $loop = $this->keyLoop($keys);
+                if ($loop === null) {
+                    return self::arrange(\array_values($values), $keys, $this->permutation($keys));
+                }
+                Loops::{$loop}($keys);
+            }
             $result = [];
             foreach ($keys as $k) {
                 $result[$k] = $values[$k];
             }
             return $result;
         }
-        if ($this->key === null && $this->versions === false && $this->columns === null) {
-            // Array keys are unique. Where distinct keys can never compare as equal, stability can't be
-            // observed and a plain quicksort on the keys is enough; the values are then fetched by key.
-            $loop = $this->keyLoop($keys);
-            if ($loop !== null) {
-                Loops::{$loop}($keys);
-                $result = [];
-                foreach ($keys as $k) {
-                    $result[$k] = $values[$k];
-                }
-                return $result;
-            }
+        $key = $this->key;
+        $sortKeys = [];
+        foreach ($keys as $k) {
+            $sortKeys[] = $key($k);
         }
-        if ($this->key === null) {
-            $sortKeys = $keys;
-        } else {
-            $key = $this->key;
-            $sortKeys = [];
-            foreach ($keys as $k) {
-                $sortKeys[] = $key($k);
-            }
-        }
-        return self::arrange(array_values($values), $keys, $this->permutation($sortKeys));
-    }
-
-    /**
-     * A sorter for locale-aware sorting with an `\Collator` (ext-intl).
-     *
-     * The sort key is `$collator->getSortKey()` of the value (or of `$key($value)`), compared
-     * bytewise. Using `Comparison::Binary` is the point: a collation key that happens to look
-     * numeric must not be compared as a number.
-     *
-     * ```php
-     * Sorter::collated(new \Collator('nb_NO'))->sort(['Åse', 'Zorro', 'Ole', 'Ærlig']);
-     * // ['Ole', 'Zorro', 'Ærlig', 'Åse']
-     * ```
-     *
-     * @param \Collator $collator Requires ext-intl, which is why it is only a suggestion.
-     * @param \Closure|null $key Derives the string to collate from a value.
-     */
-    public static function collated(\Collator $collator, ?\Closure $key = null, Order $order = Order::Ascending): self
-    {
-        return new self(
-            $order,
-            Comparison::Binary,
-            static fn(mixed $value): string => (string) $collator->getSortKey((string) ($key === null ? $value : $key($value))),
-        );
-    }
-
-    /**
-     * Sorts rows (arrays or objects) by several columns, each with its own direction, like
-     * `array_multisort()`. The columns are listed most significant first.
-     *
-     * Array rows are read by offset, objects by property; a missing column counts as `null`. The
-     * values of a column are compared with `Comparison::Regular`.
-     *
-     * ```php
-     * Sorter::byColumns(['age' => Order::Descending, 'name' => Order::Ascending])->sort($people);
-     * ```
-     *
-     * @param array<string|int, Order> $columns Column name (or offset) => direction.
-     */
-    public static function byColumns(array $columns): self
-    {
-        return new self(columns: $columns);
-    }
-
-    /**
-     * Sorts version strings in the order of `version_compare()`: `1.9` before `1.10`, and
-     * `1.0.0-beta` before `1.0.0`.
-     */
-    public static function versions(Order $order = Order::Ascending): self
-    {
-        return new self($order, versions: true);
+        return self::arrange(\array_values($values), $keys, $this->permutation($sortKeys));
     }
 
     /**
@@ -201,7 +138,7 @@ final readonly class Sorter
     private function keyLoop(array &$keys): ?string
     {
         $dir = $this->order === Order::Ascending ? 'keysAsc' : 'keysDesc';
-        if ($this->comparison === Comparison::Binary) {
+        if ($this->compare === Comparison::Binary) {
             // The string forms of distinct keys are distinct: an int key is its canonical decimal form
             // and a string key is never a canonical integer. A string "5" used as an array key later is key 5 again.
             foreach ($keys as $i => $k) {
@@ -209,7 +146,7 @@ final readonly class Sorter
             }
             return $dir . 'String';
         }
-        if ($this->comparison !== Comparison::Regular) {
+        if ($this->compare !== Comparison::Regular) {
             return null;
         }
         $ints = true;
@@ -217,7 +154,7 @@ final readonly class Sorter
         foreach ($keys as $k) {
             if (\is_int($k)) {
                 $plainStrings = false;
-            } elseif (is_numeric($k)) {
+            } elseif (\is_numeric($k)) {
                 // Numeric strings compare as numbers, and "1.0" equals "1".
                 return null;
             } else {
@@ -226,11 +163,6 @@ final readonly class Sorter
         }
         // Non-numeric strings compare bytewise under Regular.
         return $ints ? $dir . 'Int' : ($plainStrings ? $dir . 'String' : null);
-    }
-
-    private function mergeLoop(): string
-    {
-        return $this->order === Order::Ascending ? 'mergeAsc' : 'mergeDesc';
     }
 
     private static function loopName(Order $order, Comparison $comparison): string
@@ -247,42 +179,24 @@ final readonly class Sorter
     /**
      * The offsets of $items in sorted order.
      *
-     * @param list<mixed> $items sort keys, or the rows when sorting by columns
+     * @param list<mixed> $items the sort keys
      * @return list<int>
      */
     private function permutation(array $items): array
     {
+        if ($this->compare instanceof \Closure) {
+            return Loops::{$this->loop}($items, $this->compare);
+        }
         $n = \count($items);
         if ($n < 2) {
             return $n === 1 ? [0] : [];
         }
 
-        if ($this->versions) {
-            $ix = range(0, $n - 1);
-            $sign = $this->order === Order::Ascending ? 1 : -1;
-            // usort() is stable.
-            usort($ix, static fn(int $i, int $j): int => $sign * version_compare((string) $items[$i], (string) $items[$j]));
-            return $ix;
-        }
-
         // Passes, most significant first: [list of keys, direction].
-        if ($this->columns !== null) {
-            $passes = [];
-            foreach ($this->columns as $name => $order) {
-                $column = [];
-                foreach ($items as $row) {
-                    $column[] = \is_array($row) ? ($row[$name] ?? null) : ($row->$name ?? null);
-                }
-                $passes[] = [$column, $order];
-            }
-        } elseif ($this->key !== null && self::hasArray($items)) {
-            $passes = $this->columnPasses($items);
-        } else {
-            $passes = [[$items, $this->order]];
-        }
+        $passes = $this->key !== null && self::hasArray($items) ? $this->columnPasses($items) : [[$items, $this->order]];
 
         // Several columns are a series of stable sorts, least significant column first.
-        $perm = range(0, $n - 1);
+        $perm = \range(0, $n - 1);
         for ($p = \count($passes) - 1; $p >= 0; --$p) {
             [$keys, $order] = $passes[$p];
             if ($p < \count($passes) - 1) {
@@ -293,17 +207,16 @@ final readonly class Sorter
                 $keys = $ordered;
             }
             // Convert once, so the loop doesn't have to; the sorted original values are found through the offsets.
-            if ($this->comparison === Comparison::Numeric) {
+            if ($this->compare === Comparison::Numeric) {
                 foreach ($keys as $i => $k) {
                     $keys[$i] = (float) $k;
                 }
-            } elseif ($this->comparison !== Comparison::Regular) {
+            } elseif ($this->compare !== Comparison::Regular) {
                 foreach ($keys as $i => $k) {
                     $keys[$i] = (string) $k;
                 }
             }
-            $loop = self::loopName($order, $this->comparison);
-            $ix = Loops::{$loop}($keys, true);
+            $ix = Loops::{self::loopName($order, $this->compare)}($keys, true);
             $composed = [];
             foreach ($ix as $i) {
                 $composed[] = $perm[$i];
@@ -325,7 +238,7 @@ final readonly class Sorter
         $rows = [];
         $width = 0;
         foreach ($items as $item) {
-            $row = array_values((array) $item);
+            $row = \array_values((array) $item);
             $rows[] = $row;
             $width = max($width, \count($row));
         }

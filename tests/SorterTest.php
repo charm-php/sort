@@ -15,21 +15,21 @@ final class SorterTest extends TestCase
     {
         $sorter = new Sorter();
         $this->assertSame(Order::Ascending, $sorter->order);
-        $this->assertSame(Comparison::Regular, $sorter->comparison);
+        $this->assertSame(Comparison::Regular, $sorter->compare);
         $this->assertNull($sorter->key);
         $this->assertFalse($sorter->preserveKeys);
         $this->assertSame([1, 2, 3], $sorter->sort([3, 1, 2]));
-        $this->assertSame([3, 2, 1], (new Sorter(Order::Descending))->sort([3, 1, 2]));
+        $this->assertSame([3, 2, 1], (new Sorter(order: Order::Descending))->sort([3, 1, 2]));
     }
 
     public function testEmptyAndSingle(): void
     {
         foreach (Comparison::cases() as $c) {
-            $s = new Sorter(comparison: $c, key: fn($v) => $v);
+            $s = new Sorter(compare: $c, key: fn($v) => $v);
             $this->assertSame([], $s->sort([]));
             $this->assertSame([5], $s->sort([5]));
             $this->assertSame([5], $s->sort(['x' => 5]));
-            $this->assertSame(['x' => 5], (new Sorter(comparison: $c, preserveKeys: true))->sort(['x' => 5]));
+            $this->assertSame(['x' => 5], (new Sorter(compare: $c, preserveKeys: true))->sort(['x' => 5]));
             $this->assertSame([], $s->sortKeys([]));
         }
     }
@@ -39,7 +39,7 @@ final class SorterTest extends TestCase
         $input = [5 => 'b', 'x' => 'c', 2 => 'a'];
         $this->assertSame(['a', 'b', 'c'], (new Sorter())->sort($input));
         $this->assertSame([2 => 'a', 5 => 'b', 'x' => 'c'], (new Sorter(preserveKeys: true))->sort($input));
-        $this->assertSame(['x' => 'c', 5 => 'b', 2 => 'a'], (new Sorter(Order::Descending, preserveKeys: true))->sort($input));
+        $this->assertSame(['x' => 'c', 5 => 'b', 2 => 'a'], (new Sorter(order: Order::Descending, preserveKeys: true))->sort($input));
     }
 
     public function testInputIsNotModifiedAndNewArrayIsReturned(): void
@@ -60,11 +60,11 @@ final class SorterTest extends TestCase
     public function testComparisonsDiffer(): void
     {
         $input = ['10', '9', 'a1', 'A2', 'a10'];
-        $this->assertSame(['9', '10', 'A2', 'a1', 'a10'], (new Sorter(comparison: Comparison::Natural))->sort($input));
-        $this->assertSame(['10', '9', 'A2', 'a1', 'a10'], (new Sorter(comparison: Comparison::Binary))->sort($input));
-        $this->assertSame(['10', '9', 'a1', 'a10', 'A2'], (new Sorter(comparison: Comparison::BinaryCaseInsensitive))->sort($input));
-        $this->assertSame(['9', '10', 'a1', 'A2', 'a10'], (new Sorter(comparison: Comparison::NaturalCaseInsensitive))->sort($input));
-        $this->assertSame(['a1', 'A2', 'a10', '9', '10'], (new Sorter(comparison: Comparison::Numeric))->sort(['a1', 'A2', 'a10', '9', '10']));
+        $this->assertSame(['9', '10', 'A2', 'a1', 'a10'], (new Sorter(compare: Comparison::Natural))->sort($input));
+        $this->assertSame(['10', '9', 'A2', 'a1', 'a10'], (new Sorter(compare: Comparison::Binary))->sort($input));
+        $this->assertSame(['10', '9', 'a1', 'a10', 'A2'], (new Sorter(compare: Comparison::BinaryCaseInsensitive))->sort($input));
+        $this->assertSame(['9', '10', 'a1', 'A2', 'a10'], (new Sorter(compare: Comparison::NaturalCaseInsensitive))->sort($input));
+        $this->assertSame(['a1', 'A2', 'a10', '9', '10'], (new Sorter(compare: Comparison::Numeric))->sort(['a1', 'A2', 'a10', '9', '10']));
     }
 
     public function testEveryLoopHandlesStringsLargerThanTheCutoff(): void
@@ -73,6 +73,6 @@ final class SorterTest extends TestCase
         $input = array_map(fn($i) => (string) (($i * 7919) % 1009), range(1, 500));
         $expected = $input;
         sort($expected, SORT_STRING);
-        $this->assertSame($expected, (new Sorter(comparison: Comparison::Binary))->sort($input));
+        $this->assertSame($expected, (new Sorter(compare: Comparison::Binary))->sort($input));
     }
 }

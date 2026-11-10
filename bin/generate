@@ -20,10 +20,10 @@ declare(strict_types=1);
 // kind => [function used to compare, or null for the PHP operators, doc text]
 $kinds = [
     'Regular' => [null, 'PHP\'s standard comparison (also used for Numeric, on keys cast to float)'],
-    'Binary' => ['strcmp', 'bytewise string comparison'],
-    'BinaryCaseInsensitive' => ['strcasecmp', 'ASCII case-insensitive string comparison'],
-    'Natural' => ['strnatcmp', 'natural order string comparison'],
-    'NaturalCaseInsensitive' => ['strnatcasecmp', 'case-insensitive natural order string comparison'],
+    'Binary' => ['\strcmp', 'bytewise string comparison'],
+    'BinaryCaseInsensitive' => ['\strcasecmp', 'ASCII case-insensitive string comparison'],
+    'Natural' => ['\strnatcmp', 'natural order string comparison'],
+    'NaturalCaseInsensitive' => ['\strnatcasecmp', 'case-insensitive natural order string comparison'],
 ];
 
 function expand(string $template, ?string $fn, bool $desc): string
@@ -105,7 +105,7 @@ foreach (['asc' => false, 'desc' => true] as $dir => $desc) {
 // Int keys use the PHP operators; string keys compare bytewise (see Sorter::sortKeys()).
 $keyTemplate = file_get_contents(__DIR__ . '/keys.tpl');
 foreach (['asc' => false, 'desc' => true] as $dir => $desc) {
-    foreach (['Int' => [null, 'integer keys'], 'String' => ['strcmp', 'string keys, bytewise']] as $kind => [$fn, $doc]) {
+    foreach (['Int' => [null, 'integer keys'], 'String' => ['\strcmp', 'string keys, bytewise']] as $kind => [$fn, $doc]) {
         $text = str_replace(
             ['{{NAME}}', '{{DOC}}'],
             ['keys' . ucfirst($dir) . $kind, ucfirst(($desc ? 'descending, ' : 'ascending, ') . $doc) . '.'],

@@ -35,7 +35,7 @@ function sort(array &$a, int $flags = SORT_REGULAR): bool
     if ($comparison === null) {
         return \sort($a, $flags);
     }
-    $a = (new Sorter(comparison: $comparison))->sort($a);
+    $a = (new Sorter($comparison))->sort($a);
     return true;
 }
 
@@ -81,7 +81,7 @@ function nativeUsort(array $a): array
 
 function sorterCompare(array $a): array
 {
-    static $sorter = new Sorter(compare: (static fn($x, $y) => $x <=> $y));
+    static $sorter = new Sorter(static fn($x, $y) => $x <=> $y);
     return $sorter->sort($a);
 }
 
@@ -93,7 +93,7 @@ function nativeUasort(array $a): array
 
 function sorterCompareKeep(array $a): array
 {
-    static $sorter = new Sorter(compare: (static fn($x, $y) => $x <=> $y), preserveKeys: true);
+    static $sorter = new Sorter(static fn($x, $y) => $x <=> $y, preserveKeys: true);
     return $sorter->sort($a);
 }
 
@@ -105,7 +105,7 @@ function nativeUksort(array $a): array
 
 function sorterCompareKeys(array $a): array
 {
-    static $sorter = new Sorter(compare: (static fn($x, $y) => $x <=> $y));
+    static $sorter = new Sorter(static fn($x, $y) => $x <=> $y);
     return $sorter->sortKeys($a);
 }
 

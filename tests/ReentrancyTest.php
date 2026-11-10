@@ -57,7 +57,7 @@ final class ReentrancyTest extends TestCase
     public function testToStringDuringTheConversionToKeys(): void
     {
         foreach ([Comparison::Binary, Comparison::Natural] as $comparison) {
-            $sorter = new Sorter(comparison: $comparison);
+            $sorter = new Sorter(compare: $comparison);
             $calls = 0;
             $other = [5, 3, 9, 1];
             $values = [];

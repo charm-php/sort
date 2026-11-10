@@ -50,19 +50,19 @@ final class ComparatorTest extends TestCase
 
                     $expected = $values;
                     usort($expected, $native);
-                    $this->assertSame(serialize($expected), serialize((new Sorter($order, compare: $cmp))->sort($values)), "usort $label");
+                    $this->assertSame(serialize($expected), serialize((new Sorter($cmp, $order))->sort($values)), "usort $label");
 
                     $keyed = Data::withStringKeys($values);
                     $expected = $keyed;
                     uasort($expected, $native);
-                    $this->assertSame(serialize($expected), serialize((new Sorter($order, compare: $cmp, preserveKeys: true))->sort($keyed)), "uasort $label");
+                    $this->assertSame(serialize($expected), serialize((new Sorter($cmp, $order, preserveKeys: true))->sort($keyed)), "uasort $label");
 
                     // uksort(): the comparison function gets the keys. Use the values as numeric keys.
                     if (is_int($values[0] ?? null)) {
                         $byKey = array_flip($values);
                         $expected = $byKey;
                         uksort($expected, $native);
-                        $this->assertSame(serialize($expected), serialize((new Sorter($order, compare: $cmp))->sortKeys($byKey)), "uksort $label");
+                        $this->assertSame(serialize($expected), serialize((new Sorter($cmp, $order))->sortKeys($byKey)), "uksort $label");
                     }
                 }
             }
@@ -71,14 +71,14 @@ final class ComparatorTest extends TestCase
 
     public function testComparatorSeesKeysInSortKeys(): void
     {
-        $sorter = new Sorter(compare: fn(string $a, string $b) => strlen($a) <=> strlen($b));
+        $sorter = new Sorter(fn(string $a, string $b) => strlen($a) <=> strlen($b));
         $this->assertSame(['b' => 1, 'aa' => 2, 'ccc' => 3], $sorter->sortKeys(['ccc' => 3, 'aa' => 2, 'b' => 1]));
     }
 
     public function testDescendingNegatesAndStaysStable(): void
     {
         $rows = [['g' => 1, 'id' => 0], ['g' => 2, 'id' => 1], ['g' => 1, 'id' => 2], ['g' => 2, 'id' => 3]];
-        $sorted = (new Sorter(Order::Descending, compare: fn($a, $b) => $a['g'] <=> $b['g']))->sort($rows);
+        $sorted = (new Sorter(order: Order::Descending, compare: fn($a, $b) => $a['g'] <=> $b['g']))->sort($rows);
         // Reversing the ascending result would give ids 3, 1, 2, 0.
         $this->assertSame([1, 3, 0, 2], array_column($sorted, 'id'));
     }
@@ -90,14 +90,14 @@ final class ComparatorTest extends TestCase
         $values = array_map(fn() => mt_rand(0, 30), array_fill(0, 200, 0));
         $expected = $values;
         usort($expected, $cmp);
-        $this->assertSame($expected, (new Sorter(compare: $cmp))->sort($values));
+        $this->assertSame($expected, (new Sorter($cmp))->sort($values));
     }
 
     public function testBoolResultIsRejected(): void
     {
         $this->expectException(\TypeError::class);
         $this->expectExceptionMessage('must return an int, bool returned');
-        (new Sorter(compare: fn($a, $b) => $a > $b))->sort([3, 1, 2]);
+        (new Sorter(fn($a, $b) => $a > $b))->sort([3, 1, 2]);
     }
 
     public function testBoolResultIsRejectedInTheMergePassesToo(): void
@@ -105,31 +105,115 @@ final class ComparatorTest extends TestCase
         $this->expectException(\TypeError::class);
         // Ints for the insertion runs, then a bool only from the merge's first comparison.
         $calls = 0;
-        (new Sorter(compare: function ($a, $b) use (&$calls) {
+        (new Sorter(function ($a, $b) use (&$calls) {
             return ++$calls > 200 ? true : $a <=> $b;
         }))->sort(range(100, 1));
     }
 
-    public function testCannotBeCombinedWithKeyOrComparison(): void
+    public function testComparatorWithKeyFunctionReceivesTheDerivedKeys(): void
     {
-        foreach ([
-            fn() => new Sorter(key: fn($v) => $v, compare: fn($a, $b) => $a <=> $b),
-            fn() => new Sorter(comparison: Comparison::Binary, compare: fn($a, $b) => $a <=> $b),
-            fn() => new Sorter(comparison: Comparison::Numeric, compare: fn($a, $b) => $a <=> $b),
-        ] as $make) {
-            try {
-                $make();
-                $this->fail('expected a ValueError');
-            } catch (\ValueError $e) {
-                $this->assertSame('compare cannot be combined with key or comparison', $e->getMessage());
+        foreach ([Order::Ascending, Order::Descending] as $order) {
+            foreach ([1, 17, 18, 300] as $n) {
+                mt_srand($n);
+                $rows = [];
+                for ($i = 0; $i < $n; ++$i) {
+                    $rows[] = ['name' => Data::word('abc', 1, 3), 'id' => $i];
+                }
+                $calls = 0;
+                $sorter = new Sorter(strcmp(...), $order, key: function (array $r) use (&$calls) {
+                    ++$calls;
+                    return $r['name'];
+                });
+                $expected = $rows;
+                usort($expected, fn($a, $b) => $order === Order::Ascending ? strcmp($a['name'], $b['name']) : strcmp($b['name'], $a['name']));
+                $this->assertSame($expected, $sorter->sort($rows), "{$order->name} n=$n");
+                $this->assertSame($n, $calls, 'the key function is still called once per element');
             }
         }
-        $this->assertInstanceOf(Sorter::class, new Sorter(comparison: Comparison::Regular, compare: fn($a, $b) => $a <=> $b));
+    }
+
+    public function testPropertiesAndDefaults(): void
+    {
+        $f = fn($a, $b) => $a <=> $b;
+        $sorter = new Sorter($f, Order::Descending, fn($v) => $v, true);
+        $this->assertSame($f, $sorter->compare);
+        $this->assertSame(Order::Descending, $sorter->order);
+        $this->assertTrue($sorter->preserveKeys);
+        $this->assertSame(Comparison::Regular, (new Sorter())->compare);
+    }
+
+    /** The one-liners the README shows instead of dedicated constructors. */
+    public function testVersionCompare(): void
+    {
+        $this->assertSame(['1.0.0-beta', '1.0.0', '1.9', '1.10'], (new Sorter(version_compare(...)))->sort(['1.10', '1.9', '1.0.0', '1.0.0-beta']));
+        $parts = ['0', '1', '2', '10', '1.0', '1.0.0', '2.1', '1.0.0-beta', '1.0-rc1', '1.0RC2', '1.0pl1', '1.0-dev', '1.0alpha'];
+        foreach ([Order::Ascending, Order::Descending] as $order) {
+            foreach ([2, 17, 100, 500] as $n) {
+                mt_srand($n);
+                $input = [];
+                for ($i = 0; $i < $n; ++$i) {
+                    $input[] = $parts[mt_rand(0, count($parts) - 1)] . ($i % 3 === 0 ? '' : '.' . mt_rand(0, 12));
+                }
+                $expected = $input;
+                usort($expected, fn($a, $b) => $order === Order::Ascending ? version_compare($a, $b) : version_compare($b, $a));
+                $this->assertSame($expected, (new Sorter(version_compare(...), $order))->sort($input), "{$order->name} n=$n");
+            }
+        }
+    }
+
+    public function testMultipleColumnsWithAnArrayComparison(): void
+    {
+        foreach ([0, 1, 2, 17, 18, 300, 2000] as $n) {
+            for ($seed = 0; $seed < 4; ++$seed) {
+                mt_srand($n * 13 + $seed);
+                $rows = [];
+                for ($i = 0; $i < $n; ++$i) {
+                    $rows[] = ['last' => Data::word('xyz', 1, 2), 'first' => Data::word('ab', 1, 2), 'age' => mt_rand(0, 3), 'id' => $i];
+                }
+                // Age descending (the operands swapped), then last name, then first name ascending.
+                $cmp = fn($a, $b) => [$b['age'], $a['last'], $a['first']] <=> [$a['age'], $b['last'], $b['first']];
+                $expected = $rows;
+                usort($expected, $cmp);
+                $this->assertSame($expected, (new Sorter($cmp))->sort($rows), "n=$n seed=$seed");
+            }
+        }
+    }
+
+    public function testCollator(): void
+    {
+        if (!extension_loaded('intl')) {
+            $this->markTestSkipped('ext-intl is not loaded');
+        }
+        $names = ['Åse', 'Zorro', 'Ole', 'Ærlig', 'Øystein', 'Anne', 'Aase', 'Eva', '10', '9'];
+        $collator = new \Collator('nb_NO');
+        $expected = $names;
+        // SORT_STRING: the default flag compares numeric strings as numbers.
+        $collator->sort($expected, \Collator::SORT_STRING);
+        $this->assertSame($expected, (new Sorter($collator->compare(...)))->sort($names));
+        // The faster route: collation keys, compared bytewise, computed once per element.
+        $this->assertSame($expected, (new Sorter(Comparison::Binary, key: $collator->getSortKey(...)))->sort($names));
+        $this->assertSame(['Anne', 'Eva', 'Ole', 'Zorro', 'Ærlig', 'Øystein', 'Åse', 'Aase'], array_values(array_diff($expected, ['10', '9'])));
+        $this->assertSame(array_reverse($expected), (new Sorter($collator->compare(...), Order::Descending))->sort($names));
+        mt_srand(2);
+        $letters = mb_str_split('aeoæøåAEOÆØÅbk');
+        $big = [];
+        while (count($big) < 400) {
+            $name = '';
+            for ($i = mt_rand(1, 6); $i > 0; --$i) {
+                $name .= $letters[mt_rand(0, count($letters) - 1)];
+            }
+            $big[$name] = true;
+        }
+        $big = array_keys($big);
+        $expected = $big;
+        $collator->sort($expected, \Collator::SORT_STRING);
+        $this->assertSame($expected, (new Sorter(Comparison::Binary, key: $collator->getSortKey(...)))->sort($big));
+        $this->assertSame($expected, (new Sorter($collator->compare(...)))->sort($big));
     }
 
     public function testExceptionsPropagateAndSorterStaysUsable(): void
     {
-        $sorter = new Sorter(compare: function ($a, $b) {
+        $sorter = new Sorter(function ($a, $b) {
             if ($a === 13 || $b === 13) {
                 throw new \RuntimeException('unlucky');
             }
