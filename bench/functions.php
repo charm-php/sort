@@ -35,7 +35,7 @@ function sort(array &$a, int $flags = SORT_REGULAR): bool
     if ($comparison === null) {
         return \sort($a, $flags);
     }
-    $a = (new Sorter($comparison))->sort($a);
+    $a = Sorter::create($comparison)->sort($a);
     return true;
 }
 
@@ -50,7 +50,7 @@ function nativeSort(array $a): array
 function sorterSort(array $a): array
 {
     static $sorter = null;
-    $sorter ??= new Sorter();
+    $sorter ??= Sorter::create();
     return $sorter->sort($a);
 }
 
@@ -69,7 +69,7 @@ function nativeKsort(array $a): array
 function sorterSortKeys(array $a): array
 {
     static $sorter = null;
-    $sorter ??= new Sorter();
+    $sorter ??= Sorter::create();
     return $sorter->sortKeys($a);
 }
 
@@ -84,7 +84,7 @@ function nativeUsort(array $a): array
 function sorterCompare(array $a): array
 {
     static $sorter = null;
-    $sorter ??= new Sorter(static fn($x, $y) => $x <=> $y);
+    $sorter ??= Sorter::using(static fn($x, $y) => $x <=> $y);
     return $sorter->sort($a);
 }
 
@@ -97,7 +97,7 @@ function nativeUasort(array $a): array
 function sorterCompareKeep(array $a): array
 {
     static $sorter = null;
-    $sorter ??= new Sorter(static fn($x, $y) => $x <=> $y, preserveKeys: true);
+    $sorter ??= Sorter::using(static fn($x, $y) => $x <=> $y, preserveKeys: true);
     return $sorter->sort($a);
 }
 
@@ -110,8 +110,23 @@ function nativeUksort(array $a): array
 function sorterCompareKeys(array $a): array
 {
     static $sorter = null;
-    $sorter ??= new Sorter(static fn($x, $y) => $x <=> $y);
+    $sorter ??= Sorter::using(static fn($x, $y) => $x <=> $y);
     return $sorter->sortKeys($a);
+}
+
+// Sorting strings ignoring case: the work per element inside a comparison function, or once in by().
+
+function nativeUsortLower(array $a): array
+{
+    \usort($a, static fn($x, $y) => \strcmp(\strtolower($x), \strtolower($y)));
+    return $a;
+}
+
+function sorterByLower(array $a): array
+{
+    static $sorter = null;
+    $sorter ??= Sorter::by(\strtolower(...), Comparison::Binary);
+    return $sorter->sort($a);
 }
 
 /**

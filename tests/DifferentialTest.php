@@ -31,9 +31,9 @@ final class DifferentialTest extends TestCase
     #[DataProvider('configurations')]
     public function testEqualsNativeSort(Comparison $comparison, Order $order, bool $preserve): void
     {
-        $sorter = new Sorter($comparison, $order, preserveKeys: $preserve);
+        $sorter = Sorter::create($comparison, $order, $preserve);
         // Same configuration through the general path (key function, offsets carried along).
-        $keyed = new Sorter($comparison, $order, key: fn($v) => $v, preserveKeys: $preserve);
+        $keyed = Sorter::by(fn($v) => $v, $comparison, $order, $preserve);
         $flags = Data::flags($comparison);
         $cases = 0;
         foreach ([1, 2, 3] as $seed) {
@@ -63,7 +63,7 @@ final class DifferentialTest extends TestCase
     #[DataProvider('configurations')]
     public function testSortKeysEqualsKsort(Comparison $comparison, Order $order, bool $unused): void
     {
-        $sorter = new Sorter($comparison, $order);
+        $sorter = Sorter::create($comparison, $order);
         $flags = Data::flags($comparison);
         $keySets = [
             'int keys' => fn() => mt_rand(-50, 50),
@@ -104,8 +104,8 @@ final class DifferentialTest extends TestCase
                 return $a;
             },
         ];
-        $asc = new Sorter();
-        $desc = new Sorter(order: Order::Descending);
+        $asc = Sorter::create();
+        $desc = Sorter::create(order: Order::Descending);
         foreach ([0, 1, 2, 15, 16, 17, 18, 33] as $n) {
             foreach ($patterns as $name => $make) {
                 for ($seed = 0; $seed < 20; ++$seed) {
@@ -132,7 +132,7 @@ final class DifferentialTest extends TestCase
                 for ($i = 0; $i < $n; ++$i) {
                     $rows[] = ['group' => mt_rand(0, 5), 'id' => $i];
                 }
-                $sorted = (new Sorter(order: $order, key: fn(array $r) => $r['group']))->sort($rows);
+                $sorted = (Sorter::by(fn(array $r) => $r['group'], order: $order))->sort($rows);
                 $expected = $rows;
                 usort($expected, fn($x, $y) => $order === Order::Ascending ? $x['group'] <=> $y['group'] : $y['group'] <=> $x['group']);
                 $this->assertSame($expected, $sorted, "n=$n {$order->name}");
@@ -144,7 +144,7 @@ final class DifferentialTest extends TestCase
     {
         $input = array_merge(array_fill(0, 40, '7'), ['7.0', '07', '7e0', ' 7', '7 ', '7.00']);
         shuffle($input);
-        $this->assertSame(serialize(Data::native($input, Order::Ascending, SORT_REGULAR)), serialize((new Sorter())->sort($input)));
-        $this->assertSame(serialize(Data::native($input, Order::Descending, SORT_REGULAR)), serialize((new Sorter(order: Order::Descending))->sort($input)));
+        $this->assertSame(serialize(Data::native($input, Order::Ascending, SORT_REGULAR)), serialize((Sorter::create())->sort($input)));
+        $this->assertSame(serialize(Data::native($input, Order::Descending, SORT_REGULAR)), serialize((Sorter::create(order: Order::Descending))->sort($input)));
     }
 }

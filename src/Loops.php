@@ -37,7 +37,7 @@ final class Loops
      * every sorted element, so the caller can arrange other data the same way; with $perm false the
      * return value is meaningless.
      *
-     * @param list<mixed> $arr
+     * @param list<mixed> $arr the values to compare
      * @return list<int>
      */
     public static function ascRegular(array &$arr, bool $perm): array
@@ -110,7 +110,7 @@ final class Loops
             }
         }
 
-        // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
+        // Stable quicksort: Hoare partitioning on the pair (value, original offset). The pairs are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
         $ix = \range(0, $n - 1);
@@ -128,7 +128,7 @@ final class Loops
             while ($high - $low > 16) {
                 $mid = ($low + $high) >> 1;
 
-                // Median of three on (value, offset), sorted in place: key(low) <= key(mid) <= key(high).
+                // Median of three on (value, offset), sorted in place: pair(low) <= pair(mid) <= pair(high).
                 $va = $a[$low];
                 $ia = $ix[$low];
                 $vb = $a[$mid];
@@ -164,7 +164,7 @@ final class Loops
                 $p = $vb;
                 $pi = $ib;
 
-                // Hoare partition; key(low) and key(high) are the sentinels.
+                // Hoare partition; pair(low) and pair(high) are the sentinels.
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
@@ -214,7 +214,7 @@ final class Loops
             $high = $stackHigh[$sp];
         }
 
-        // The smallest key is within the first 17 offsets; move it to offset 0 as the sentinel.
+        // The smallest pair is within the first 17 offsets; move it to offset 0 as the sentinel.
         $m = 0;
         $mv = $a[0];
         $mi = $ix[0];
@@ -233,7 +233,7 @@ final class Loops
             $ix[0] = $mi;
         }
 
-        // Final insertion pass over the whole array; key(0) is the smallest, so no bounds check.
+        // Final insertion pass over the whole array; pair(0) is the smallest, so no bounds check.
         for ($i = 2; $i < $n; ++$i) {
             $v = $a[$i];
             $vi = $ix[$i];
@@ -262,7 +262,7 @@ final class Loops
      * every sorted element, so the caller can arrange other data the same way; with $perm false the
      * return value is meaningless.
      *
-     * @param list<mixed> $arr
+     * @param list<mixed> $arr the values to compare
      * @return list<int>
      */
     public static function ascBinary(array &$arr, bool $perm): array
@@ -335,7 +335,7 @@ final class Loops
             }
         }
 
-        // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
+        // Stable quicksort: Hoare partitioning on the pair (value, original offset). The pairs are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
         $ix = \range(0, $n - 1);
@@ -353,7 +353,7 @@ final class Loops
             while ($high - $low > 16) {
                 $mid = ($low + $high) >> 1;
 
-                // Median of three on (value, offset), sorted in place: key(low) <= key(mid) <= key(high).
+                // Median of three on (value, offset), sorted in place: pair(low) <= pair(mid) <= pair(high).
                 $va = $a[$low];
                 $ia = $ix[$low];
                 $vb = $a[$mid];
@@ -389,7 +389,7 @@ final class Loops
                 $p = $vb;
                 $pi = $ib;
 
-                // Hoare partition; key(low) and key(high) are the sentinels.
+                // Hoare partition; pair(low) and pair(high) are the sentinels.
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
@@ -439,7 +439,7 @@ final class Loops
             $high = $stackHigh[$sp];
         }
 
-        // The smallest key is within the first 17 offsets; move it to offset 0 as the sentinel.
+        // The smallest pair is within the first 17 offsets; move it to offset 0 as the sentinel.
         $m = 0;
         $mv = $a[0];
         $mi = $ix[0];
@@ -458,7 +458,7 @@ final class Loops
             $ix[0] = $mi;
         }
 
-        // Final insertion pass over the whole array; key(0) is the smallest, so no bounds check.
+        // Final insertion pass over the whole array; pair(0) is the smallest, so no bounds check.
         for ($i = 2; $i < $n; ++$i) {
             $v = $a[$i];
             $vi = $ix[$i];
@@ -487,7 +487,7 @@ final class Loops
      * every sorted element, so the caller can arrange other data the same way; with $perm false the
      * return value is meaningless.
      *
-     * @param list<mixed> $arr
+     * @param list<mixed> $arr the values to compare
      * @return list<int>
      */
     public static function ascBinaryCaseInsensitive(array &$arr, bool $perm): array
@@ -560,7 +560,7 @@ final class Loops
             }
         }
 
-        // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
+        // Stable quicksort: Hoare partitioning on the pair (value, original offset). The pairs are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
         $ix = \range(0, $n - 1);
@@ -578,7 +578,7 @@ final class Loops
             while ($high - $low > 16) {
                 $mid = ($low + $high) >> 1;
 
-                // Median of three on (value, offset), sorted in place: key(low) <= key(mid) <= key(high).
+                // Median of three on (value, offset), sorted in place: pair(low) <= pair(mid) <= pair(high).
                 $va = $a[$low];
                 $ia = $ix[$low];
                 $vb = $a[$mid];
@@ -614,7 +614,7 @@ final class Loops
                 $p = $vb;
                 $pi = $ib;
 
-                // Hoare partition; key(low) and key(high) are the sentinels.
+                // Hoare partition; pair(low) and pair(high) are the sentinels.
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
@@ -664,7 +664,7 @@ final class Loops
             $high = $stackHigh[$sp];
         }
 
-        // The smallest key is within the first 17 offsets; move it to offset 0 as the sentinel.
+        // The smallest pair is within the first 17 offsets; move it to offset 0 as the sentinel.
         $m = 0;
         $mv = $a[0];
         $mi = $ix[0];
@@ -683,7 +683,7 @@ final class Loops
             $ix[0] = $mi;
         }
 
-        // Final insertion pass over the whole array; key(0) is the smallest, so no bounds check.
+        // Final insertion pass over the whole array; pair(0) is the smallest, so no bounds check.
         for ($i = 2; $i < $n; ++$i) {
             $v = $a[$i];
             $vi = $ix[$i];
@@ -712,7 +712,7 @@ final class Loops
      * every sorted element, so the caller can arrange other data the same way; with $perm false the
      * return value is meaningless.
      *
-     * @param list<mixed> $arr
+     * @param list<mixed> $arr the values to compare
      * @return list<int>
      */
     public static function ascNatural(array &$arr, bool $perm): array
@@ -785,7 +785,7 @@ final class Loops
             }
         }
 
-        // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
+        // Stable quicksort: Hoare partitioning on the pair (value, original offset). The pairs are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
         $ix = \range(0, $n - 1);
@@ -803,7 +803,7 @@ final class Loops
             while ($high - $low > 16) {
                 $mid = ($low + $high) >> 1;
 
-                // Median of three on (value, offset), sorted in place: key(low) <= key(mid) <= key(high).
+                // Median of three on (value, offset), sorted in place: pair(low) <= pair(mid) <= pair(high).
                 $va = $a[$low];
                 $ia = $ix[$low];
                 $vb = $a[$mid];
@@ -839,7 +839,7 @@ final class Loops
                 $p = $vb;
                 $pi = $ib;
 
-                // Hoare partition; key(low) and key(high) are the sentinels.
+                // Hoare partition; pair(low) and pair(high) are the sentinels.
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
@@ -889,7 +889,7 @@ final class Loops
             $high = $stackHigh[$sp];
         }
 
-        // The smallest key is within the first 17 offsets; move it to offset 0 as the sentinel.
+        // The smallest pair is within the first 17 offsets; move it to offset 0 as the sentinel.
         $m = 0;
         $mv = $a[0];
         $mi = $ix[0];
@@ -908,7 +908,7 @@ final class Loops
             $ix[0] = $mi;
         }
 
-        // Final insertion pass over the whole array; key(0) is the smallest, so no bounds check.
+        // Final insertion pass over the whole array; pair(0) is the smallest, so no bounds check.
         for ($i = 2; $i < $n; ++$i) {
             $v = $a[$i];
             $vi = $ix[$i];
@@ -937,7 +937,7 @@ final class Loops
      * every sorted element, so the caller can arrange other data the same way; with $perm false the
      * return value is meaningless.
      *
-     * @param list<mixed> $arr
+     * @param list<mixed> $arr the values to compare
      * @return list<int>
      */
     public static function ascNaturalCaseInsensitive(array &$arr, bool $perm): array
@@ -1010,7 +1010,7 @@ final class Loops
             }
         }
 
-        // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
+        // Stable quicksort: Hoare partitioning on the pair (value, original offset). The pairs are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
         $ix = \range(0, $n - 1);
@@ -1028,7 +1028,7 @@ final class Loops
             while ($high - $low > 16) {
                 $mid = ($low + $high) >> 1;
 
-                // Median of three on (value, offset), sorted in place: key(low) <= key(mid) <= key(high).
+                // Median of three on (value, offset), sorted in place: pair(low) <= pair(mid) <= pair(high).
                 $va = $a[$low];
                 $ia = $ix[$low];
                 $vb = $a[$mid];
@@ -1064,7 +1064,7 @@ final class Loops
                 $p = $vb;
                 $pi = $ib;
 
-                // Hoare partition; key(low) and key(high) are the sentinels.
+                // Hoare partition; pair(low) and pair(high) are the sentinels.
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
@@ -1114,7 +1114,7 @@ final class Loops
             $high = $stackHigh[$sp];
         }
 
-        // The smallest key is within the first 17 offsets; move it to offset 0 as the sentinel.
+        // The smallest pair is within the first 17 offsets; move it to offset 0 as the sentinel.
         $m = 0;
         $mv = $a[0];
         $mi = $ix[0];
@@ -1133,7 +1133,7 @@ final class Loops
             $ix[0] = $mi;
         }
 
-        // Final insertion pass over the whole array; key(0) is the smallest, so no bounds check.
+        // Final insertion pass over the whole array; pair(0) is the smallest, so no bounds check.
         for ($i = 2; $i < $n; ++$i) {
             $v = $a[$i];
             $vi = $ix[$i];
@@ -1162,7 +1162,7 @@ final class Loops
      * every sorted element, so the caller can arrange other data the same way; with $perm false the
      * return value is meaningless.
      *
-     * @param list<mixed> $arr
+     * @param list<mixed> $arr the values to compare
      * @return list<int>
      */
     public static function descRegular(array &$arr, bool $perm): array
@@ -1235,7 +1235,7 @@ final class Loops
             }
         }
 
-        // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
+        // Stable quicksort: Hoare partitioning on the pair (value, original offset). The pairs are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
         $ix = \range(0, $n - 1);
@@ -1253,7 +1253,7 @@ final class Loops
             while ($high - $low > 16) {
                 $mid = ($low + $high) >> 1;
 
-                // Median of three on (value, offset), sorted in place: key(low) <= key(mid) <= key(high).
+                // Median of three on (value, offset), sorted in place: pair(low) <= pair(mid) <= pair(high).
                 $va = $a[$low];
                 $ia = $ix[$low];
                 $vb = $a[$mid];
@@ -1289,7 +1289,7 @@ final class Loops
                 $p = $vb;
                 $pi = $ib;
 
-                // Hoare partition; key(low) and key(high) are the sentinels.
+                // Hoare partition; pair(low) and pair(high) are the sentinels.
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
@@ -1339,7 +1339,7 @@ final class Loops
             $high = $stackHigh[$sp];
         }
 
-        // The smallest key is within the first 17 offsets; move it to offset 0 as the sentinel.
+        // The smallest pair is within the first 17 offsets; move it to offset 0 as the sentinel.
         $m = 0;
         $mv = $a[0];
         $mi = $ix[0];
@@ -1358,7 +1358,7 @@ final class Loops
             $ix[0] = $mi;
         }
 
-        // Final insertion pass over the whole array; key(0) is the smallest, so no bounds check.
+        // Final insertion pass over the whole array; pair(0) is the smallest, so no bounds check.
         for ($i = 2; $i < $n; ++$i) {
             $v = $a[$i];
             $vi = $ix[$i];
@@ -1387,7 +1387,7 @@ final class Loops
      * every sorted element, so the caller can arrange other data the same way; with $perm false the
      * return value is meaningless.
      *
-     * @param list<mixed> $arr
+     * @param list<mixed> $arr the values to compare
      * @return list<int>
      */
     public static function descBinary(array &$arr, bool $perm): array
@@ -1460,7 +1460,7 @@ final class Loops
             }
         }
 
-        // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
+        // Stable quicksort: Hoare partitioning on the pair (value, original offset). The pairs are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
         $ix = \range(0, $n - 1);
@@ -1478,7 +1478,7 @@ final class Loops
             while ($high - $low > 16) {
                 $mid = ($low + $high) >> 1;
 
-                // Median of three on (value, offset), sorted in place: key(low) <= key(mid) <= key(high).
+                // Median of three on (value, offset), sorted in place: pair(low) <= pair(mid) <= pair(high).
                 $va = $a[$low];
                 $ia = $ix[$low];
                 $vb = $a[$mid];
@@ -1514,7 +1514,7 @@ final class Loops
                 $p = $vb;
                 $pi = $ib;
 
-                // Hoare partition; key(low) and key(high) are the sentinels.
+                // Hoare partition; pair(low) and pair(high) are the sentinels.
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
@@ -1564,7 +1564,7 @@ final class Loops
             $high = $stackHigh[$sp];
         }
 
-        // The smallest key is within the first 17 offsets; move it to offset 0 as the sentinel.
+        // The smallest pair is within the first 17 offsets; move it to offset 0 as the sentinel.
         $m = 0;
         $mv = $a[0];
         $mi = $ix[0];
@@ -1583,7 +1583,7 @@ final class Loops
             $ix[0] = $mi;
         }
 
-        // Final insertion pass over the whole array; key(0) is the smallest, so no bounds check.
+        // Final insertion pass over the whole array; pair(0) is the smallest, so no bounds check.
         for ($i = 2; $i < $n; ++$i) {
             $v = $a[$i];
             $vi = $ix[$i];
@@ -1612,7 +1612,7 @@ final class Loops
      * every sorted element, so the caller can arrange other data the same way; with $perm false the
      * return value is meaningless.
      *
-     * @param list<mixed> $arr
+     * @param list<mixed> $arr the values to compare
      * @return list<int>
      */
     public static function descBinaryCaseInsensitive(array &$arr, bool $perm): array
@@ -1685,7 +1685,7 @@ final class Loops
             }
         }
 
-        // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
+        // Stable quicksort: Hoare partitioning on the pair (value, original offset). The pairs are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
         $ix = \range(0, $n - 1);
@@ -1703,7 +1703,7 @@ final class Loops
             while ($high - $low > 16) {
                 $mid = ($low + $high) >> 1;
 
-                // Median of three on (value, offset), sorted in place: key(low) <= key(mid) <= key(high).
+                // Median of three on (value, offset), sorted in place: pair(low) <= pair(mid) <= pair(high).
                 $va = $a[$low];
                 $ia = $ix[$low];
                 $vb = $a[$mid];
@@ -1739,7 +1739,7 @@ final class Loops
                 $p = $vb;
                 $pi = $ib;
 
-                // Hoare partition; key(low) and key(high) are the sentinels.
+                // Hoare partition; pair(low) and pair(high) are the sentinels.
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
@@ -1789,7 +1789,7 @@ final class Loops
             $high = $stackHigh[$sp];
         }
 
-        // The smallest key is within the first 17 offsets; move it to offset 0 as the sentinel.
+        // The smallest pair is within the first 17 offsets; move it to offset 0 as the sentinel.
         $m = 0;
         $mv = $a[0];
         $mi = $ix[0];
@@ -1808,7 +1808,7 @@ final class Loops
             $ix[0] = $mi;
         }
 
-        // Final insertion pass over the whole array; key(0) is the smallest, so no bounds check.
+        // Final insertion pass over the whole array; pair(0) is the smallest, so no bounds check.
         for ($i = 2; $i < $n; ++$i) {
             $v = $a[$i];
             $vi = $ix[$i];
@@ -1837,7 +1837,7 @@ final class Loops
      * every sorted element, so the caller can arrange other data the same way; with $perm false the
      * return value is meaningless.
      *
-     * @param list<mixed> $arr
+     * @param list<mixed> $arr the values to compare
      * @return list<int>
      */
     public static function descNatural(array &$arr, bool $perm): array
@@ -1910,7 +1910,7 @@ final class Loops
             }
         }
 
-        // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
+        // Stable quicksort: Hoare partitioning on the pair (value, original offset). The pairs are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
         $ix = \range(0, $n - 1);
@@ -1928,7 +1928,7 @@ final class Loops
             while ($high - $low > 16) {
                 $mid = ($low + $high) >> 1;
 
-                // Median of three on (value, offset), sorted in place: key(low) <= key(mid) <= key(high).
+                // Median of three on (value, offset), sorted in place: pair(low) <= pair(mid) <= pair(high).
                 $va = $a[$low];
                 $ia = $ix[$low];
                 $vb = $a[$mid];
@@ -1964,7 +1964,7 @@ final class Loops
                 $p = $vb;
                 $pi = $ib;
 
-                // Hoare partition; key(low) and key(high) are the sentinels.
+                // Hoare partition; pair(low) and pair(high) are the sentinels.
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
@@ -2014,7 +2014,7 @@ final class Loops
             $high = $stackHigh[$sp];
         }
 
-        // The smallest key is within the first 17 offsets; move it to offset 0 as the sentinel.
+        // The smallest pair is within the first 17 offsets; move it to offset 0 as the sentinel.
         $m = 0;
         $mv = $a[0];
         $mi = $ix[0];
@@ -2033,7 +2033,7 @@ final class Loops
             $ix[0] = $mi;
         }
 
-        // Final insertion pass over the whole array; key(0) is the smallest, so no bounds check.
+        // Final insertion pass over the whole array; pair(0) is the smallest, so no bounds check.
         for ($i = 2; $i < $n; ++$i) {
             $v = $a[$i];
             $vi = $ix[$i];
@@ -2062,7 +2062,7 @@ final class Loops
      * every sorted element, so the caller can arrange other data the same way; with $perm false the
      * return value is meaningless.
      *
-     * @param list<mixed> $arr
+     * @param list<mixed> $arr the values to compare
      * @return list<int>
      */
     public static function descNaturalCaseInsensitive(array &$arr, bool $perm): array
@@ -2135,7 +2135,7 @@ final class Loops
             }
         }
 
-        // Stable quicksort: Hoare partitioning on the key (value, original offset). Keys are
+        // Stable quicksort: Hoare partitioning on the pair (value, original offset). The pairs are
         // unique, so any correct algorithm gives the stable order. The offset is only compared
         // when two values are equal; it lives in a parallel packed array that moves with the values.
         $ix = \range(0, $n - 1);
@@ -2153,7 +2153,7 @@ final class Loops
             while ($high - $low > 16) {
                 $mid = ($low + $high) >> 1;
 
-                // Median of three on (value, offset), sorted in place: key(low) <= key(mid) <= key(high).
+                // Median of three on (value, offset), sorted in place: pair(low) <= pair(mid) <= pair(high).
                 $va = $a[$low];
                 $ia = $ix[$low];
                 $vb = $a[$mid];
@@ -2189,7 +2189,7 @@ final class Loops
                 $p = $vb;
                 $pi = $ib;
 
-                // Hoare partition; key(low) and key(high) are the sentinels.
+                // Hoare partition; pair(low) and pair(high) are the sentinels.
                 $i = $low + 1;
                 $j = $high - 1;
                 while (true) {
@@ -2239,7 +2239,7 @@ final class Loops
             $high = $stackHigh[$sp];
         }
 
-        // The smallest key is within the first 17 offsets; move it to offset 0 as the sentinel.
+        // The smallest pair is within the first 17 offsets; move it to offset 0 as the sentinel.
         $m = 0;
         $mv = $a[0];
         $mi = $ix[0];
@@ -2258,7 +2258,7 @@ final class Loops
             $ix[0] = $mi;
         }
 
-        // Final insertion pass over the whole array; key(0) is the smallest, so no bounds check.
+        // Final insertion pass over the whole array; pair(0) is the smallest, so no bounds check.
         for ($i = 2; $i < $n; ++$i) {
             $v = $a[$i];
             $vi = $ix[$i];

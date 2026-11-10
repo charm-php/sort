@@ -34,7 +34,7 @@ final class ReentrancyTest extends TestCase
 
     public function testToStringSortsAnotherArrayInsideTheComparison(): void
     {
-        $sorter = new Sorter();
+        $sorter = Sorter::create();
         mt_srand(5);
         $other = array_map(fn() => mt_rand(0, 1000), range(1, 500));
         $calls = 0;
@@ -57,7 +57,7 @@ final class ReentrancyTest extends TestCase
     public function testToStringDuringTheConversionToKeys(): void
     {
         foreach ([Comparison::Binary, Comparison::Natural] as $comparison) {
-            $sorter = new Sorter(compare: $comparison);
+            $sorter = Sorter::create($comparison);
             $calls = 0;
             $other = [5, 3, 9, 1];
             $values = [];

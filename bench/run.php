@@ -69,6 +69,9 @@ $warm = array_map(fn() => mt_rand(0, 20000), range(1, 20000));
 foreach (['nativeUsort', 'sorterCompare', 'nativeUasort', 'sorterCompareKeep'] as $fn) {
     measure("Charm\\Sort\\Bench\\$fn", $warm, 1, 3);
 }
+foreach (['nativeUsortLower', 'sorterByLower'] as $fn) {
+    measure("Charm\\Sort\\Bench\\$fn", array_map(fn($i) => 'a' . ($i * 7919 % 1000), range(1, 5000)), 1, 3);
+}
 foreach (['nativeUksort', 'sorterCompareKeys'] as $fn) {
     measure("Charm\\Sort\\Bench\\$fn", array_flip($warm), 1, 3);
 }
@@ -160,6 +163,13 @@ $compareRows = [
         shuffle($keys);
         return array_flip($keys);
     }],
+    'usort(strtolower) / by()' => ['Charm\\Sort\\Bench\\nativeUsortLower', 'Charm\\Sort\\Bench\\sorterByLower', fn(int $n) => array_map(function () {
+        $s = '';
+        for ($i = mt_rand(3, 12); $i > 0; --$i) {
+            $s .= 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'[mt_rand(0, 51)];
+        }
+        return $s;
+    }, range(1, $n))],
     'usort(), already sorted' => ['Charm\\Sort\\Bench\\nativeUsort', 'Charm\\Sort\\Bench\\sorterCompare', fn(int $n) => range(1, $n)],
 ];
 foreach ($sizes as $n) {
