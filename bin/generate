@@ -11,6 +11,7 @@ declare(strict_types=1);
 //   bin/generate --stdout   print it (the test suite compares this with the committed file)
 //
 // Template tokens, all with parenthesis-free arguments:
+//   @before(a, b)       key-only: a sorts strictly before b   (keys.tpl, and loop.tpl via @after)
 //   @lt(a, ia, b, ib)   a sorts before b: by key, then by original offset
 //   @gt(a, ia, b, ib)   a sorts after b
 //   @after(a, b)        key of a sorts strictly after key of b (offsets not involved)
@@ -27,7 +28,7 @@ $kinds = [
 
 function expand(string $template, ?string $fn, bool $desc): string
 {
-    return preg_replace_callback('/@(lt|gt|after)\(([^()]*)\)/', function (array $m) use ($fn, $desc): string {
+    return preg_replace_callback('/@(lt|gt|after|before)\(([^()]*)\)/', function (array $m) use ($fn, $desc): string {
         $args = array_map('trim', explode(',', $m[2]));
         $first = $args[0];
         // "$x = $a[$i]": the first use fetches and assigns, later uses read the variable.
@@ -39,9 +40,10 @@ function expand(string $template, ?string $fn, bool $desc): string
         // $before: the value comparison that means "sorts before" in this direction.
         $before = $desc ? '>' : '<';
         $after = $desc ? '<' : '>';
-        if ($m[1] === 'after') {
+        if ($m[1] === 'after' || $m[1] === 'before') {
             [, $b] = $args;
-            return $fn === null ? "($a $after $b)" : "($fn($a, $b) $after 0)";
+            $op = $m[1] === 'after' ? $after : $before;
+            return $fn === null ? "($a $op $b)" : "($fn($a, $b) $op 0)";
         }
         [, $ia, $b, $ib] = $args;
         $isLt = $m[1] === 'lt';
@@ -75,6 +77,18 @@ final class Loops
     {
     }
 
+    /**
+     * The result of a comparison function that did not return an int, as usort() would read it
+     * (a float is truncated), except that a bool is an error: it can't tell "equal" from "less".
+     */
+    private static function result(mixed $result): int
+    {
+        if (\is_bool($result) || \is_array($result) || \is_object($result)) {
+            throw new \TypeError('The comparison function must return an int, ' . get_debug_type($result) . ' returned');
+        }
+        return (int) $result;
+    }
+
 PHP;
 $methods = [];
 foreach (['asc' => false, 'desc' => true] as $dir => $desc) {
@@ -86,6 +100,32 @@ foreach (['asc' => false, 'desc' => true] as $dir => $desc) {
         );
         $methods[] = expand($text, $fn, $desc);
     }
+}
+// Sorting array keys: unique and totally ordered, so a plain quicksort without offsets.
+// Int keys use the PHP operators; string keys compare bytewise (see Sorter::sortKeys()).
+$keyTemplate = file_get_contents(__DIR__ . '/keys.tpl');
+foreach (['asc' => false, 'desc' => true] as $dir => $desc) {
+    foreach (['Int' => [null, 'integer keys'], 'String' => ['strcmp', 'string keys, bytewise']] as $kind => [$fn, $doc]) {
+        $text = str_replace(
+            ['{{NAME}}', '{{DOC}}'],
+            ['keys' . ucfirst($dir) . $kind, ucfirst(($desc ? 'descending, ' : 'ascending, ') . $doc) . '.'],
+            $keyTemplate,
+        );
+        $methods[] = expand($text, $fn, $desc);
+    }
+}
+// Sorting with a user comparison function: a stable merge sort. The call is inlined as a statement,
+// and the result is checked: usort() would only deprecate a bool, we reject it.
+$mergeTemplate = file_get_contents(__DIR__ . '/merge.tpl');
+foreach (['asc' => false, 'desc' => true] as $dir => $desc) {
+    // The comparison function's result is negated for a descending sort: "left first" is then >= 0.
+    $text = str_replace(
+        ['{{NAME}}', '{{DOC}}', '{{GT}}', '{{LE}}'],
+        ['merge' . ucfirst($dir), ucfirst($desc ? 'descending' : 'ascending') . ', with a comparison function.', $desc ? '< 0' : '> 0', $desc ? '>= 0' : '<= 0'],
+        $mergeTemplate,
+    );
+    $text = preg_replace_callback('/^( *)@cmp\(([^,]*), ([^()]*)\)$/m', fn(array $m) => "$m[1]\$c = \$cmp($m[2], $m[3]);\n$m[1]if (!\\is_int(\$c)) {\n$m[1]    \$c = self::result(\$c);\n$m[1]}", $text);
+    $methods[] = $text;
 }
 $out .= implode('', $methods) . "}\n";
 

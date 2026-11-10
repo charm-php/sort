@@ -33,7 +33,7 @@ final class DifferentialTest extends TestCase
     {
         $sorter = new Sorter($order, $comparison, preserveKeys: $preserve);
         // Same configuration through the general path (key function, offsets carried along).
-        $keyed = new Sorter($order, $comparison, fn($v) => $v, $preserve);
+        $keyed = new Sorter($order, $comparison, key: fn($v) => $v, preserveKeys: $preserve);
         $flags = Data::flags($comparison);
         $cases = 0;
         foreach ([1, 2, 3] as $seed) {
@@ -59,7 +59,7 @@ final class DifferentialTest extends TestCase
         $this->assertGreaterThan(400, $cases);
     }
 
-    /** ksort()/krsort() with every flag; the key sets have a consistent order. */
+    /** ksort()/krsort() with every flag, on PHP 8.2+ semantics; the key sets have a consistent order. */
     #[DataProvider('configurations')]
     public function testSortKeysEqualsKsort(Comparison $comparison, Order $order, bool $unused): void
     {
@@ -68,7 +68,12 @@ final class DifferentialTest extends TestCase
         $keySets = [
             'int keys' => fn() => mt_rand(-50, 50),
             'numeric string keys' => fn() => mt_rand(0, 1) ? (string) (mt_rand(-40, 40) / 4) : sprintf('%.2f', mt_rand(-40, 40) / 4),
-            'letter keys' => fn() => Data::word('abAB', 1, 4),
+            'letter keys' => fn() => Data::word('abc', 1, 4),
+            'letter keys, both cases (equal when case is ignored)' => fn() => Data::word('abAB', 1, 4),
+            // PHP 8.2 changed ksort() on mixed keys to the standard comparison (GH-9296); under 8.0/8.1 it
+            // converted strings to numbers. All digits sort before all letters, so the order is consistent.
+            'mixed int and letter keys' => fn() => mt_rand(0, 1) ? mt_rand(-30, 30) : Data::word('abc', 1, 3),
+            'numeric and letter keys' => fn() => mt_rand(0, 2) === 0 ? sprintf('%.1f', mt_rand(-30, 30) / 2) : (mt_rand(0, 1) ? mt_rand(-30, 30) : Data::word('abc', 1, 3)),
         ];
         foreach ($keySets as $name => $makeKey) {
             foreach ([0, 1, 2, 16, 17, 18, 40, 300] as $n) {

@@ -19,6 +19,18 @@ final class Loops
     }
 
     /**
+     * The result of a comparison function that did not return an int, as usort() would read it
+     * (a float is truncated), except that a bool is an error: it can't tell "equal" from "less".
+     */
+    private static function result(mixed $result): int
+    {
+        if (\is_bool($result) || \is_array($result) || \is_object($result)) {
+            throw new \TypeError('The comparison function must return an int, ' . get_debug_type($result) . ' returned');
+        }
+        return (int) $result;
+    }
+
+    /**
      * Ascending, PHP's standard comparison (also used for Numeric, on keys cast to float).
      *
      * Sorts the list $arr in place, stable. With $perm true it also returns the original offset of
@@ -2266,5 +2278,809 @@ final class Loops
 
         $arr = $a;
         return $ix;
+    }
+
+    /**
+     * Ascending, integer keys.
+     *
+     * Sorts the list $arr of unique keys in place. Unique keys that compare as different need no
+     * stability: no offset array and no tie-break, so this is a plain quicksort.
+     *
+     * @param list<int|string> $arr
+     */
+    public static function keysAscInt(array &$arr): void
+    {
+        $n = \count($arr);
+        if ($n < 2) {
+            return;
+        }
+
+        $a = $arr;
+        $arr = null;
+
+        // Local (not static) partition stacks, like the stable loops.
+        $stackLow = [];
+        $stackHigh = [];
+
+        $low = 0;
+        $high = $n - 1;
+        $sp = 0;
+
+        while (true) {
+            while ($high - $low > 16) {
+                $mid = ($low + $high) >> 1;
+
+                // Median of three, sorted in place: a[low] <= a[mid] <= a[high].
+                $x = $a[$low];
+                $y = $a[$mid];
+                if (($x > $y)) {
+                    $a[$low] = $y;
+                    $a[$mid] = $x;
+                    $y = $x;
+                }
+                $z = $a[$high];
+                if (($y > $z)) {
+                    $a[$mid] = $z;
+                    $a[$high] = $y;
+                    $y = $z;
+                    $x = $a[$low];
+                    if (($x > $y)) {
+                        $a[$low] = $y;
+                        $a[$mid] = $x;
+                        $y = $x;
+                    }
+                }
+                $p = $y;
+
+                // Hoare partition; a[low] and a[high] are the sentinels.
+                $i = $low + 1;
+                $j = $high - 1;
+                while (true) {
+                    while (($a[$i] < $p)) {
+                        ++$i;
+                    }
+                    while (($a[$j] > $p)) {
+                        --$j;
+                    }
+                    if ($i >= $j) {
+                        break;
+                    }
+                    $t = $a[$i];
+                    $a[$i] = $a[$j];
+                    $a[$j] = $t;
+                    ++$i;
+                    --$j;
+                }
+
+                if (($j - $low) < ($high - $i)) {
+                    if ($high - $i > 16) {
+                        $stackLow[$sp] = $i;
+                        $stackHigh[$sp] = $high;
+                        ++$sp;
+                    }
+                    $high = $j;
+                } else {
+                    if ($j - $low > 16) {
+                        $stackLow[$sp] = $low;
+                        $stackHigh[$sp] = $j;
+                        ++$sp;
+                    }
+                    $low = $i;
+                }
+            }
+
+            if ($sp === 0) {
+                break;
+            }
+            --$sp;
+            $low = $stackLow[$sp];
+            $high = $stackHigh[$sp];
+        }
+
+        // The first key in order is within the first 17 offsets; move it to offset 0 as the sentinel.
+        $m = 0;
+        $mv = $a[0];
+        $limit = $n < 17 ? $n : 17;
+        for ($i = 1; $i < $limit; ++$i) {
+            if (($a[$i] < $mv)) {
+                $m = $i;
+                $mv = $a[$i];
+            }
+        }
+        if ($m !== 0) {
+            $a[$m] = $a[0];
+            $a[0] = $mv;
+        }
+
+        // Final insertion pass; a[0] is first in order, so no bounds check.
+        for ($i = 2; $i < $n; ++$i) {
+            $v = $a[$i];
+            $j = $i - 1;
+            if (($a[$j] > $v)) {
+                do {
+                    $a[$j + 1] = $a[$j];
+                    --$j;
+                } while (($a[$j] > $v));
+                $a[$j + 1] = $v;
+            }
+        }
+
+        $arr = $a;
+    }
+
+    /**
+     * Ascending, string keys, bytewise.
+     *
+     * Sorts the list $arr of unique keys in place. Unique keys that compare as different need no
+     * stability: no offset array and no tie-break, so this is a plain quicksort.
+     *
+     * @param list<int|string> $arr
+     */
+    public static function keysAscString(array &$arr): void
+    {
+        $n = \count($arr);
+        if ($n < 2) {
+            return;
+        }
+
+        $a = $arr;
+        $arr = null;
+
+        // Local (not static) partition stacks, like the stable loops.
+        $stackLow = [];
+        $stackHigh = [];
+
+        $low = 0;
+        $high = $n - 1;
+        $sp = 0;
+
+        while (true) {
+            while ($high - $low > 16) {
+                $mid = ($low + $high) >> 1;
+
+                // Median of three, sorted in place: a[low] <= a[mid] <= a[high].
+                $x = $a[$low];
+                $y = $a[$mid];
+                if ((strcmp($x, $y) > 0)) {
+                    $a[$low] = $y;
+                    $a[$mid] = $x;
+                    $y = $x;
+                }
+                $z = $a[$high];
+                if ((strcmp($y, $z) > 0)) {
+                    $a[$mid] = $z;
+                    $a[$high] = $y;
+                    $y = $z;
+                    $x = $a[$low];
+                    if ((strcmp($x, $y) > 0)) {
+                        $a[$low] = $y;
+                        $a[$mid] = $x;
+                        $y = $x;
+                    }
+                }
+                $p = $y;
+
+                // Hoare partition; a[low] and a[high] are the sentinels.
+                $i = $low + 1;
+                $j = $high - 1;
+                while (true) {
+                    while ((strcmp($a[$i], $p) < 0)) {
+                        ++$i;
+                    }
+                    while ((strcmp($a[$j], $p) > 0)) {
+                        --$j;
+                    }
+                    if ($i >= $j) {
+                        break;
+                    }
+                    $t = $a[$i];
+                    $a[$i] = $a[$j];
+                    $a[$j] = $t;
+                    ++$i;
+                    --$j;
+                }
+
+                if (($j - $low) < ($high - $i)) {
+                    if ($high - $i > 16) {
+                        $stackLow[$sp] = $i;
+                        $stackHigh[$sp] = $high;
+                        ++$sp;
+                    }
+                    $high = $j;
+                } else {
+                    if ($j - $low > 16) {
+                        $stackLow[$sp] = $low;
+                        $stackHigh[$sp] = $j;
+                        ++$sp;
+                    }
+                    $low = $i;
+                }
+            }
+
+            if ($sp === 0) {
+                break;
+            }
+            --$sp;
+            $low = $stackLow[$sp];
+            $high = $stackHigh[$sp];
+        }
+
+        // The first key in order is within the first 17 offsets; move it to offset 0 as the sentinel.
+        $m = 0;
+        $mv = $a[0];
+        $limit = $n < 17 ? $n : 17;
+        for ($i = 1; $i < $limit; ++$i) {
+            if ((strcmp($a[$i], $mv) < 0)) {
+                $m = $i;
+                $mv = $a[$i];
+            }
+        }
+        if ($m !== 0) {
+            $a[$m] = $a[0];
+            $a[0] = $mv;
+        }
+
+        // Final insertion pass; a[0] is first in order, so no bounds check.
+        for ($i = 2; $i < $n; ++$i) {
+            $v = $a[$i];
+            $j = $i - 1;
+            if ((strcmp($a[$j], $v) > 0)) {
+                do {
+                    $a[$j + 1] = $a[$j];
+                    --$j;
+                } while ((strcmp($a[$j], $v) > 0));
+                $a[$j + 1] = $v;
+            }
+        }
+
+        $arr = $a;
+    }
+
+    /**
+     * Descending, integer keys.
+     *
+     * Sorts the list $arr of unique keys in place. Unique keys that compare as different need no
+     * stability: no offset array and no tie-break, so this is a plain quicksort.
+     *
+     * @param list<int|string> $arr
+     */
+    public static function keysDescInt(array &$arr): void
+    {
+        $n = \count($arr);
+        if ($n < 2) {
+            return;
+        }
+
+        $a = $arr;
+        $arr = null;
+
+        // Local (not static) partition stacks, like the stable loops.
+        $stackLow = [];
+        $stackHigh = [];
+
+        $low = 0;
+        $high = $n - 1;
+        $sp = 0;
+
+        while (true) {
+            while ($high - $low > 16) {
+                $mid = ($low + $high) >> 1;
+
+                // Median of three, sorted in place: a[low] <= a[mid] <= a[high].
+                $x = $a[$low];
+                $y = $a[$mid];
+                if (($x < $y)) {
+                    $a[$low] = $y;
+                    $a[$mid] = $x;
+                    $y = $x;
+                }
+                $z = $a[$high];
+                if (($y < $z)) {
+                    $a[$mid] = $z;
+                    $a[$high] = $y;
+                    $y = $z;
+                    $x = $a[$low];
+                    if (($x < $y)) {
+                        $a[$low] = $y;
+                        $a[$mid] = $x;
+                        $y = $x;
+                    }
+                }
+                $p = $y;
+
+                // Hoare partition; a[low] and a[high] are the sentinels.
+                $i = $low + 1;
+                $j = $high - 1;
+                while (true) {
+                    while (($a[$i] > $p)) {
+                        ++$i;
+                    }
+                    while (($a[$j] < $p)) {
+                        --$j;
+                    }
+                    if ($i >= $j) {
+                        break;
+                    }
+                    $t = $a[$i];
+                    $a[$i] = $a[$j];
+                    $a[$j] = $t;
+                    ++$i;
+                    --$j;
+                }
+
+                if (($j - $low) < ($high - $i)) {
+                    if ($high - $i > 16) {
+                        $stackLow[$sp] = $i;
+                        $stackHigh[$sp] = $high;
+                        ++$sp;
+                    }
+                    $high = $j;
+                } else {
+                    if ($j - $low > 16) {
+                        $stackLow[$sp] = $low;
+                        $stackHigh[$sp] = $j;
+                        ++$sp;
+                    }
+                    $low = $i;
+                }
+            }
+
+            if ($sp === 0) {
+                break;
+            }
+            --$sp;
+            $low = $stackLow[$sp];
+            $high = $stackHigh[$sp];
+        }
+
+        // The first key in order is within the first 17 offsets; move it to offset 0 as the sentinel.
+        $m = 0;
+        $mv = $a[0];
+        $limit = $n < 17 ? $n : 17;
+        for ($i = 1; $i < $limit; ++$i) {
+            if (($a[$i] > $mv)) {
+                $m = $i;
+                $mv = $a[$i];
+            }
+        }
+        if ($m !== 0) {
+            $a[$m] = $a[0];
+            $a[0] = $mv;
+        }
+
+        // Final insertion pass; a[0] is first in order, so no bounds check.
+        for ($i = 2; $i < $n; ++$i) {
+            $v = $a[$i];
+            $j = $i - 1;
+            if (($a[$j] < $v)) {
+                do {
+                    $a[$j + 1] = $a[$j];
+                    --$j;
+                } while (($a[$j] < $v));
+                $a[$j + 1] = $v;
+            }
+        }
+
+        $arr = $a;
+    }
+
+    /**
+     * Descending, string keys, bytewise.
+     *
+     * Sorts the list $arr of unique keys in place. Unique keys that compare as different need no
+     * stability: no offset array and no tie-break, so this is a plain quicksort.
+     *
+     * @param list<int|string> $arr
+     */
+    public static function keysDescString(array &$arr): void
+    {
+        $n = \count($arr);
+        if ($n < 2) {
+            return;
+        }
+
+        $a = $arr;
+        $arr = null;
+
+        // Local (not static) partition stacks, like the stable loops.
+        $stackLow = [];
+        $stackHigh = [];
+
+        $low = 0;
+        $high = $n - 1;
+        $sp = 0;
+
+        while (true) {
+            while ($high - $low > 16) {
+                $mid = ($low + $high) >> 1;
+
+                // Median of three, sorted in place: a[low] <= a[mid] <= a[high].
+                $x = $a[$low];
+                $y = $a[$mid];
+                if ((strcmp($x, $y) < 0)) {
+                    $a[$low] = $y;
+                    $a[$mid] = $x;
+                    $y = $x;
+                }
+                $z = $a[$high];
+                if ((strcmp($y, $z) < 0)) {
+                    $a[$mid] = $z;
+                    $a[$high] = $y;
+                    $y = $z;
+                    $x = $a[$low];
+                    if ((strcmp($x, $y) < 0)) {
+                        $a[$low] = $y;
+                        $a[$mid] = $x;
+                        $y = $x;
+                    }
+                }
+                $p = $y;
+
+                // Hoare partition; a[low] and a[high] are the sentinels.
+                $i = $low + 1;
+                $j = $high - 1;
+                while (true) {
+                    while ((strcmp($a[$i], $p) > 0)) {
+                        ++$i;
+                    }
+                    while ((strcmp($a[$j], $p) < 0)) {
+                        --$j;
+                    }
+                    if ($i >= $j) {
+                        break;
+                    }
+                    $t = $a[$i];
+                    $a[$i] = $a[$j];
+                    $a[$j] = $t;
+                    ++$i;
+                    --$j;
+                }
+
+                if (($j - $low) < ($high - $i)) {
+                    if ($high - $i > 16) {
+                        $stackLow[$sp] = $i;
+                        $stackHigh[$sp] = $high;
+                        ++$sp;
+                    }
+                    $high = $j;
+                } else {
+                    if ($j - $low > 16) {
+                        $stackLow[$sp] = $low;
+                        $stackHigh[$sp] = $j;
+                        ++$sp;
+                    }
+                    $low = $i;
+                }
+            }
+
+            if ($sp === 0) {
+                break;
+            }
+            --$sp;
+            $low = $stackLow[$sp];
+            $high = $stackHigh[$sp];
+        }
+
+        // The first key in order is within the first 17 offsets; move it to offset 0 as the sentinel.
+        $m = 0;
+        $mv = $a[0];
+        $limit = $n < 17 ? $n : 17;
+        for ($i = 1; $i < $limit; ++$i) {
+            if ((strcmp($a[$i], $mv) > 0)) {
+                $m = $i;
+                $mv = $a[$i];
+            }
+        }
+        if ($m !== 0) {
+            $a[$m] = $a[0];
+            $a[0] = $mv;
+        }
+
+        // Final insertion pass; a[0] is first in order, so no bounds check.
+        for ($i = 2; $i < $n; ++$i) {
+            $v = $a[$i];
+            $j = $i - 1;
+            if ((strcmp($a[$j], $v) < 0)) {
+                do {
+                    $a[$j + 1] = $a[$j];
+                    --$j;
+                } while ((strcmp($a[$j], $v) < 0));
+                $a[$j + 1] = $v;
+            }
+        }
+
+        $arr = $a;
+    }
+
+    /**
+     * Ascending, with a comparison function.
+     *
+     * Stable bottom-up merge sort of the list $arr in place with a user comparison function, which is
+     * what costs most here: a merge sort calls it fewer times than a quicksort (about n log n - n), and
+     * it skips the merge of two runs that are already in order, and a sorted array costs n - 1 calls. Returns the original offset of every
+     * sorted element.
+     *
+     * @param list<mixed> $arr
+     * @return list<int>
+     */
+    public static function mergeAsc(array &$arr, \Closure $cmp): array
+    {
+        $n = \count($arr);
+        if ($n < 2) {
+            return $n === 1 ? [0] : [];
+        }
+
+        $a = $arr;
+        $arr = null;
+
+        // Already in order: n - 1 calls and no moves. A random array leaves the scan at the first
+        // pairs that are out of order.
+        for ($i = 1; $i < $n; ++$i) {
+            $c = $cmp($a[$i - 1], $a[$i]);
+            if (!\is_int($c)) {
+                $c = self::result($c);
+            }
+            if ($c > 0) {
+                break;
+            }
+        }
+        if ($i === $n) {
+            $arr = $a;
+            return range(0, $n - 1);
+        }
+
+        $ax = range(0, $n - 1);
+
+        // Insertion sort runs of 8 in place.
+        for ($start = 0; $start < $n; $start += 8) {
+            $end = $start + 8 < $n ? $start + 8 : $n;
+            for ($i = $start + 1; $i < $end; ++$i) {
+                $v = $a[$i];
+                $vi = $ax[$i];
+                $j = $i - 1;
+                $c = $cmp($a[$j], $v);
+                if (!\is_int($c)) {
+                    $c = self::result($c);
+                }
+                if ($c > 0) {
+                    do {
+                        $a[$j + 1] = $a[$j];
+                        $ax[$j + 1] = $ax[$j];
+                        --$j;
+                        if ($j < $start) {
+                            break;
+                        }
+                        $c = $cmp($a[$j], $v);
+                        if (!\is_int($c)) {
+                            $c = self::result($c);
+                        }
+                    } while ($c > 0);
+                    $a[$j + 1] = $v;
+                    $ax[$j + 1] = $vi;
+                }
+            }
+        }
+
+        // Merge passes, ping-pong between ($a, $ax) and ($b, $bx); the first write to $b separates it.
+        $b = $a;
+        $bx = $ax;
+        for ($width = 8; $width < $n; $width <<= 1) {
+            for ($low = 0; $low < $n; $low += 2 * $width) {
+                $mid = $low + $width;
+                $end = $mid + $width < $n ? $mid + $width : $n;
+                if ($mid < $n) {
+                    $c = $cmp($a[$mid - 1], $a[$mid]);
+                    if (!\is_int($c)) {
+                        $c = self::result($c);
+                    }
+                }
+                // A lone run, or two runs already in order: copy.
+                if ($mid >= $n || $c <= 0) {
+                    for ($k = $low; $k < $end; ++$k) {
+                        $b[$k] = $a[$k];
+                        $bx[$k] = $ax[$k];
+                    }
+                    continue;
+                }
+                $i = $low;
+                $j = $mid;
+                $k = $low;
+                $l = $a[$i];
+                $r = $a[$j];
+                while (true) {
+                    // The left element wins ties: that is the stability.
+                    $c = $cmp($l, $r);
+                    if (!\is_int($c)) {
+                        $c = self::result($c);
+                    }
+                    if ($c <= 0) {
+                        $b[$k] = $l;
+                        $bx[$k] = $ax[$i];
+                        ++$k;
+                        if (++$i === $mid) {
+                            break;
+                        }
+                        $l = $a[$i];
+                    } else {
+                        $b[$k] = $r;
+                        $bx[$k] = $ax[$j];
+                        ++$k;
+                        if (++$j === $end) {
+                            break;
+                        }
+                        $r = $a[$j];
+                    }
+                }
+                // One side is used up; copy the rest of the other.
+                while ($i < $mid) {
+                    $b[$k] = $a[$i];
+                    $bx[$k] = $ax[$i];
+                    ++$i;
+                    ++$k;
+                }
+                while ($j < $end) {
+                    $b[$k] = $a[$j];
+                    $bx[$k] = $ax[$j];
+                    ++$j;
+                    ++$k;
+                }
+            }
+            $t = $a;
+            $a = $b;
+            $b = $t;
+            $t = $ax;
+            $ax = $bx;
+            $bx = $t;
+            $t = null;
+        }
+
+        $arr = $a;
+        return $ax;
+    }
+
+    /**
+     * Descending, with a comparison function.
+     *
+     * Stable bottom-up merge sort of the list $arr in place with a user comparison function, which is
+     * what costs most here: a merge sort calls it fewer times than a quicksort (about n log n - n), and
+     * it skips the merge of two runs that are already in order, and a sorted array costs n - 1 calls. Returns the original offset of every
+     * sorted element.
+     *
+     * @param list<mixed> $arr
+     * @return list<int>
+     */
+    public static function mergeDesc(array &$arr, \Closure $cmp): array
+    {
+        $n = \count($arr);
+        if ($n < 2) {
+            return $n === 1 ? [0] : [];
+        }
+
+        $a = $arr;
+        $arr = null;
+
+        // Already in order: n - 1 calls and no moves. A random array leaves the scan at the first
+        // pairs that are out of order.
+        for ($i = 1; $i < $n; ++$i) {
+            $c = $cmp($a[$i - 1], $a[$i]);
+            if (!\is_int($c)) {
+                $c = self::result($c);
+            }
+            if ($c < 0) {
+                break;
+            }
+        }
+        if ($i === $n) {
+            $arr = $a;
+            return range(0, $n - 1);
+        }
+
+        $ax = range(0, $n - 1);
+
+        // Insertion sort runs of 8 in place.
+        for ($start = 0; $start < $n; $start += 8) {
+            $end = $start + 8 < $n ? $start + 8 : $n;
+            for ($i = $start + 1; $i < $end; ++$i) {
+                $v = $a[$i];
+                $vi = $ax[$i];
+                $j = $i - 1;
+                $c = $cmp($a[$j], $v);
+                if (!\is_int($c)) {
+                    $c = self::result($c);
+                }
+                if ($c < 0) {
+                    do {
+                        $a[$j + 1] = $a[$j];
+                        $ax[$j + 1] = $ax[$j];
+                        --$j;
+                        if ($j < $start) {
+                            break;
+                        }
+                        $c = $cmp($a[$j], $v);
+                        if (!\is_int($c)) {
+                            $c = self::result($c);
+                        }
+                    } while ($c < 0);
+                    $a[$j + 1] = $v;
+                    $ax[$j + 1] = $vi;
+                }
+            }
+        }
+
+        // Merge passes, ping-pong between ($a, $ax) and ($b, $bx); the first write to $b separates it.
+        $b = $a;
+        $bx = $ax;
+        for ($width = 8; $width < $n; $width <<= 1) {
+            for ($low = 0; $low < $n; $low += 2 * $width) {
+                $mid = $low + $width;
+                $end = $mid + $width < $n ? $mid + $width : $n;
+                if ($mid < $n) {
+                    $c = $cmp($a[$mid - 1], $a[$mid]);
+                    if (!\is_int($c)) {
+                        $c = self::result($c);
+                    }
+                }
+                // A lone run, or two runs already in order: copy.
+                if ($mid >= $n || $c >= 0) {
+                    for ($k = $low; $k < $end; ++$k) {
+                        $b[$k] = $a[$k];
+                        $bx[$k] = $ax[$k];
+                    }
+                    continue;
+                }
+                $i = $low;
+                $j = $mid;
+                $k = $low;
+                $l = $a[$i];
+                $r = $a[$j];
+                while (true) {
+                    // The left element wins ties: that is the stability.
+                    $c = $cmp($l, $r);
+                    if (!\is_int($c)) {
+                        $c = self::result($c);
+                    }
+                    if ($c >= 0) {
+                        $b[$k] = $l;
+                        $bx[$k] = $ax[$i];
+                        ++$k;
+                        if (++$i === $mid) {
+                            break;
+                        }
+                        $l = $a[$i];
+                    } else {
+                        $b[$k] = $r;
+                        $bx[$k] = $ax[$j];
+                        ++$k;
+                        if (++$j === $end) {
+                            break;
+                        }
+                        $r = $a[$j];
+                    }
+                }
+                // One side is used up; copy the rest of the other.
+                while ($i < $mid) {
+                    $b[$k] = $a[$i];
+                    $bx[$k] = $ax[$i];
+                    ++$i;
+                    ++$k;
+                }
+                while ($j < $end) {
+                    $b[$k] = $a[$j];
+                    $bx[$k] = $ax[$j];
+                    ++$j;
+                    ++$k;
+                }
+            }
+            $t = $a;
+            $a = $b;
+            $b = $t;
+            $t = $ax;
+            $ax = $bx;
+            $bx = $t;
+            $t = null;
+        }
+
+        $arr = $a;
+        return $ax;
     }
 }

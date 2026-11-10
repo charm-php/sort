@@ -17,10 +17,10 @@ final class KeyFunctionTest extends TestCase
             foreach ([0, 1, 2, 16, 17, 100, 5000] as $n) {
                 foreach ([false, true] as $preserve) {
                     $calls = 0;
-                    $sorter = new Sorter(Order::Descending, $comparison, function ($v) use (&$calls) {
+                    $sorter = new Sorter(Order::Descending, $comparison, key: function ($v) use (&$calls) {
                         ++$calls;
                         return $v % 17;
-                    }, $preserve);
+                    }, preserveKeys: $preserve);
                     $sorter->sort($n === 0 ? [] : range(1, $n));
                     $this->assertSame($n, $calls, "{$comparison->name} n=$n preserve=" . (int) $preserve);
                 }
